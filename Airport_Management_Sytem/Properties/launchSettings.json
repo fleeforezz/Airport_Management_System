@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Airport_Management_Sytem": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
