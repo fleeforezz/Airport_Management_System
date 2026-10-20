@@ -1,10 +1,56 @@
-﻿namespace AirportManagementSystem
+﻿using AirportManagementSystem.Controller;
+
+namespace AirportManagementSystem
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            int choice = 0;
+            AirportController airportController = new AirportController();
+
+            do
+            {
+                Console.WriteLine("Airport Management System");
+                Console.WriteLine("1. Add Airport");
+                Console.WriteLine("2. Update Airport");
+                Console.WriteLine("3. Delete Airport");
+                Console.WriteLine("4. View All Airports");
+                Console.WriteLine("5. Search Airport");
+                Console.WriteLine("6. Exit");
+                Console.Write("Enter your choice: ");
+                choice = Convert.ToInt32(Console.ReadLine());
+                switch (choice)
+                {
+                    case 1:
+                        // Add Airport
+                        airportController.AddAirport();
+                        break;
+                    case 2:
+                        // Update Airport
+                        break;
+                    case 3:
+                        // Delete Airport
+                        break;
+                    case 4:
+                        // View All Airports
+                        var allAirports = airportController.GetAll();
+                        foreach (var airport in allAirports)
+                        {
+                            Console.WriteLine($"ID: {airport.Id}, Name: {airport.Name}, City: {airport.City}, Country: {airport.Country}");
+                        }
+                        break;
+                    case 5:
+                        // Search Airport
+                        break;
+                    case 6:
+                        Console.WriteLine("Exiting...");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            } while (choice != 6);
         }
     }
 }
