@@ -1,4 +1,4 @@
-﻿namespace Shared
+﻿namespace AirportManagementSystem
 {
     internal class Program
     {
