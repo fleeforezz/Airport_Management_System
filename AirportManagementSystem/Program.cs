@@ -24,7 +24,7 @@ namespace AirportManagementSystem
                 {
                     case 1:
                         // Add Airport
-                        airportController.AddAirport();
+                        //airportController.Add(new Airport());
                         break;
                     case 2:
                         // Update Airport

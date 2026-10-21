@@ -2,6 +2,7 @@
 using AirportManagementSystem.Interfaces;
 using AirportManagementSystem.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,37 +10,47 @@ using System.Threading.Tasks;
 
 namespace AirportManagementSystem.Controller
 {
-    public class AirportController : Interfaces.IList
+    public class AirportController : IRepository<Airport>
     {
-        FileHandler fileHandler = new FileHandler();
-        private List<Airport> airports = fileHandler.ReadMultiple<Airport>("airports.txt");
+        private readonly string _filePath = "D:\\Github\\fleeforezz\\Airport_Management_System\\AirportManagementSystem\\Data\\airports.json";
+        private List<Airport> _airports;
 
-        T IList.Add<T>(T item)
+        public AirportController()
+        {
+            _airports = FileHandler.ReadMultiple<Airport>(_filePath);
+        }
+
+        public Airport Add(Airport item)
         {
             throw new NotImplementedException();
         }
 
-        void IList.Delete<T>(int id)
+        public void Delete(int id)
         {
             throw new NotImplementedException();
         }
 
-        List<Airport> IList.GetAll<Airport>()
-        {
-            return airports;
-        }
-
-        Airport IList.GetById<Airport>(int id)
+        public void Display(Airport item)
         {
             throw new NotImplementedException();
         }
 
-        List<T> IList.Search<T>(string query)
+        public List<Airport> GetAll()
+        {
+            return _airports;
+        }
+
+        public Airport? GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        T IList.Update<T>(T item)
+        public List<Airport> Search(string query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Airport Update(Airport item)
         {
             throw new NotImplementedException();
         }
