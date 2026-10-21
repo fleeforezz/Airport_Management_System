@@ -34,11 +34,7 @@ namespace AirportManagementSystem
                         break;
                     case 4:
                         // View All Airports
-                        var allAirports = airportController.GetAll();
-                        foreach (var airport in allAirports)
-                        {
-                            Console.WriteLine($"ID: {airport.Id}, Name: {airport.Name}, City: {airport.City}, Country: {airport.Country}");
-                        }
+                        airportController.Display();
                         break;
                     case 5:
                         // Search Airport

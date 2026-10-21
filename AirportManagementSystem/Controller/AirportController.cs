@@ -1,12 +1,6 @@
 ﻿using AirportManagementSystem.Datasources;
 using AirportManagementSystem.Interfaces;
 using AirportManagementSystem.Models;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AirportManagementSystem.Controller
 {
@@ -22,7 +16,15 @@ namespace AirportManagementSystem.Controller
 
         public Airport Add(Airport item)
         {
-            throw new NotImplementedException();
+            if (_airports.Any(a => a.Id == item.Id))
+            {
+                throw new ArgumentException($"An airport with ID {item.Id} already exists.");
+            }
+            
+            Console.ReadLine("Press any key to add the airport...");
+            _airports.Add(item);
+            FileHandler.WriteMultiple(_filePath, _airports);
+            return item;
         }
 
         public void Delete(int id)
@@ -30,9 +32,18 @@ namespace AirportManagementSystem.Controller
             throw new NotImplementedException();
         }
 
-        public void Display(Airport item)
+        public void Display()
         {
-            throw new NotImplementedException();
+            if (_airports.Count == 0)
+            {
+                Console.WriteLine("No airports available.");
+                return;
+            }
+
+            foreach (var airport in _airports)
+            {
+                Console.WriteLine(airport.Display());
+            }
         }
 
         public List<Airport> GetAll()
@@ -42,7 +53,13 @@ namespace AirportManagementSystem.Controller
 
         public Airport? GetById(int id)
         {
-            throw new NotImplementedException();
+            var airport = _airports.FirstOrDefault(a => a.Id == id);
+            if (airport == null)
+            {
+                Console.WriteLine($"Airport with ID {id} not found.");
+                return null;
+            }
+            return airport;
         }
 
         public List<Airport> Search(string query)

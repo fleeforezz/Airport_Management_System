@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace AirportManagementSystem.Models
 {
@@ -19,6 +15,18 @@ namespace AirportManagementSystem.Models
             Name = name;
             City = city;
             Country = country;
+        }
+
+        // Display Airport Information
+        public String Display()
+        {
+            return string.Format(
+                "| {0,-8} | {1,-35} | {2,-20} | {3,-15} |",
+                this.Id,
+                this.Name,
+                this.City,
+                this.Country
+            );
         }
     }
 }
