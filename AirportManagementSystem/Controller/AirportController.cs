@@ -1,4 +1,5 @@
 ﻿using AirportManagementSystem.Datasources;
+using AirportManagementSystem.Helpers;
 using AirportManagementSystem.Interfaces;
 using AirportManagementSystem.Models;
 
@@ -14,17 +15,33 @@ namespace AirportManagementSystem.Controller
             _airports = FileHandler.ReadMultiple<Airport>(_filePath);
         }
 
-        public Airport Add(Airport item)
+        public Airport Add()
         {
-            if (_airports.Any(a => a.Id == item.Id))
+            //Console.Write("Enter airport ID: ");
+            //int id = Convert.ToInt32(Console.ReadLine());
+
+            //if (_airports.Any(a => a.Id == id))
+            //{
+            //    throw new ArgumentException($"An airport with ID {id} already exists.");
+            //}
+
+
+            string? name = Inputter.GetStringValue("Enter airport name: ", "Airport name cannot be empty.");
+            string? city = Inputter.GetStringValue("Enter airport city: ", "Airport city cannot be empty.");
+            string? country = Inputter.GetStringValue("Enter airport country: ", "Airport country cannot be empty.");
+
+            var airport = new Airport
             {
-                throw new ArgumentException($"An airport with ID {item.Id} already exists.");
-            }
-            
-            Console.ReadLine("Press any key to add the airport...");
-            _airports.Add(item);
+                Id = id,
+                Name = name,
+                City = city,
+                Country = country
+            };
+
+            _airports.Add(airport);
             FileHandler.WriteMultiple(_filePath, _airports);
-            return item;
+
+            return airport;
         }
 
         public void Delete(int id)
@@ -36,10 +53,17 @@ namespace AirportManagementSystem.Controller
         {
             if (_airports.Count == 0)
             {
+                Console.WriteLine(
+                    $"| {"ID",-8} | {"Name",-35} | {"City",-20} | {"Country",-15} |"
+                );
                 Console.WriteLine("No airports available.");
                 return;
             }
 
+            Console.WriteLine(
+                $"| {"ID",-8} | {"Name",-35} | {"City",-20} | {"Country",-15} |"
+             );
+            Console.WriteLine(new string('-', 90));
             foreach (var airport in _airports)
             {
                 Console.WriteLine(airport.Display());
