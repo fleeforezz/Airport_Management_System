@@ -8,7 +8,7 @@ namespace AirportManagementSystem.Controller
     public class AirportController : IRepository<Airport>
     {
         private readonly string _filePath = Path.Combine(
-            AppContext.BaseDirectory, 
+            "..", "..", "..",
             "Data", 
             "airports.json"
         );
@@ -22,6 +22,7 @@ namespace AirportManagementSystem.Controller
 
         public Airport Add()
         {
+
             int id = Inputter.GetIntValue(
                 "Enter ID: ",
                 1,
@@ -29,32 +30,49 @@ namespace AirportManagementSystem.Controller
                 false
                 );
 
-            string? name = Inputter.GetStringValue(
+            if (GetById(id) == null)
+            {
+                string? name = Inputter.GetStringValue(
                 "Enter airport name: ",
                 "Airport name cannot be empty."
                 );
 
-            string? city = Inputter.GetStringValue(
-                "Enter airport city: ",
-                "Airport city cannot be empty."
-                );
+                string? city = Inputter.GetStringValue(
+                    "Enter airport city: ",
+                    "Airport city cannot be empty."
+                    );
 
-            string? country = Inputter.GetStringValue(
-                "Enter airport country: ",
-                "Airport country cannot be empty."
-                );
+                string? country = Inputter.GetStringValue(
+                    "Enter airport country: ",
+                    "Airport country cannot be empty."
+                    );
 
-            var newAirport = new Airport(id, name, city, country);
+                var newAirport = new Airport(id, name, city, country);
 
-            _airports.Add(newAirport);
-            FileHandler.SaveSingle(_airports, _filePath);
+                _airports.Add(newAirport);
+                FileHandler.SaveSingle(_airports, _filePath);
 
-            return newAirport;
+                return newAirport;
+            } 
+            else
+            {
+                Console.WriteLine("Airport exists!!!");
+                return null;
+            }
+            
         }
 
         public void Delete(int id)
         {
-            throw new NotImplementedException();
+            if (GetById(id) != null)
+            {
+                _airports.Remove(GetById(id));
+                Console.WriteLine("Remove success");
+            }
+            else
+            {
+                Console.WriteLine($"Airport with ID {id} not found");
+            }
         }
 
         public void Display()
@@ -90,7 +108,6 @@ namespace AirportManagementSystem.Controller
             var airport = _airports.FirstOrDefault(a => a.Id == id);
             if (airport == null)
             {
-                Console.WriteLine($"Airport with ID {id} not found.");
                 return null;
             }
             return airport;

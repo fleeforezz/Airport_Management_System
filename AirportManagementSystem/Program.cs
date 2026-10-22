@@ -25,13 +25,21 @@ namespace AirportManagementSystem
                 {
                     case 1:
                         // Add Airport
-                        airportController.Add();
+                        if (airportController.Add() != null)
+                        {
+                            Console.WriteLine("Airport has been added !!!");
+                        }
                         break;
                     case 2:
                         // Update Airport
                         break;
                     case 3:
                         // Delete Airport
+                        Console.Write("Enter id: ");
+                        int id = int.Parse(Console.ReadLine());
+
+                        airportController.Delete(id);
+
                         break;
                     case 4:
                         // View All Airports
