@@ -7,7 +7,12 @@ namespace AirportManagementSystem.Controller
 {
     public class AirportController : IRepository<Airport>
     {
-        private readonly string _filePath = "D:\\Github\\fleeforezz\\Airport_Management_System\\AirportManagementSystem\\Data\\airports.json";
+        private readonly string _filePath = Path.Combine(
+            AppContext.BaseDirectory, 
+            "Data", 
+            "airports.json"
+        );
+
         private List<Airport> _airports;
 
         public AirportController()
@@ -17,31 +22,34 @@ namespace AirportManagementSystem.Controller
 
         public Airport Add()
         {
-            //Console.Write("Enter airport ID: ");
-            //int id = Convert.ToInt32(Console.ReadLine());
+            int id = Inputter.GetIntValue(
+                "Enter ID: ",
+                1,
+                99,
+                false
+                );
 
-            //if (_airports.Any(a => a.Id == id))
-            //{
-            //    throw new ArgumentException($"An airport with ID {id} already exists.");
-            //}
+            string? name = Inputter.GetStringValue(
+                "Enter airport name: ",
+                "Airport name cannot be empty."
+                );
 
+            string? city = Inputter.GetStringValue(
+                "Enter airport city: ",
+                "Airport city cannot be empty."
+                );
 
-            string? name = Inputter.GetStringValue("Enter airport name: ", "Airport name cannot be empty.");
-            string? city = Inputter.GetStringValue("Enter airport city: ", "Airport city cannot be empty.");
-            string? country = Inputter.GetStringValue("Enter airport country: ", "Airport country cannot be empty.");
+            string? country = Inputter.GetStringValue(
+                "Enter airport country: ",
+                "Airport country cannot be empty."
+                );
 
-            var airport = new Airport
-            {
-                Id = id,
-                Name = name,
-                City = city,
-                Country = country
-            };
+            var newAirport = new Airport(id, name, city, country);
 
-            _airports.Add(airport);
-            FileHandler.WriteMultiple(_filePath, _airports);
+            _airports.Add(newAirport);
+            FileHandler.SaveSingle(_airports, _filePath);
 
-            return airport;
+            return newAirport;
         }
 
         public void Delete(int id)
@@ -51,12 +59,13 @@ namespace AirportManagementSystem.Controller
 
         public void Display()
         {
+            string header = "| {\"ID\",-8} | {\"Name\",-35} | {\"City\",-20} | {\"Country\",-15} |";
+
             if (_airports.Count == 0)
             {
-                Console.WriteLine(
-                    $"| {"ID",-8} | {"Name",-35} | {"City",-20} | {"Country",-15} |"
-                );
+                Console.WriteLine(header);
                 Console.WriteLine("No airports available.");
+                Console.WriteLine(new string('-', 90));
                 return;
             }
 
@@ -68,6 +77,7 @@ namespace AirportManagementSystem.Controller
             {
                 Console.WriteLine(airport.Display());
             }
+            Console.WriteLine(new string('-', 90));
         }
 
         public List<Airport> GetAll()

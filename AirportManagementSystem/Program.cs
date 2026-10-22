@@ -19,6 +19,7 @@ namespace AirportManagementSystem
                 Console.WriteLine("5. Search Airport");
                 Console.WriteLine("6. Exit");
                 Console.Write("Enter your choice: ");
+
                 choice = Convert.ToInt32(Console.ReadLine());
                 switch (choice)
                 {

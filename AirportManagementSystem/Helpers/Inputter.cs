@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace AirportManagementSystem.Helpers
 {
     public class Inputter
     {
-        // Get String (no empty index)
+        /*
+        ###############################
+        Get String (no empty index)
+        ###############################
+         */
         public static string GetStringValue(String prompt, String emptyMessage)
         {
             while (true)
@@ -26,9 +25,13 @@ namespace AirportManagementSystem.Helpers
             }
         }
 
-        // Get Integer (no empty index)
+        /*
+        ###############################
+        Get Integer (no empty index)
+        ###############################
+         */
         public static int GetIntValue(
-            String prompt, 
+            String prompt,
             int minValue, int maxValue,
             bool allowEmpty
             )
@@ -37,20 +40,27 @@ namespace AirportManagementSystem.Helpers
             {
                 Console.Write(prompt);
                 string input = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(input) && int.TryParse(input, out int value))
+
+                if (string.IsNullOrWhiteSpace(input))
                 {
-                    if (value >= minValue && value <= maxValue)
-                    {
-                        return value;
-                    }
-                    else
+                    return -1;
+                }
+
+                try
+                {
+                    int number = Convert.ToInt32(input);
+                    if (number < minValue && number > maxValue)
                     {
                         Console.WriteLine($"Please enter a value between {minValue} and {maxValue}.");
+                        continue;
                     }
+
+                    return number;
                 }
-                else
+                catch (Exception e)
                 {
-                    Console.WriteLine(emptyMessage);
+                    Console.WriteLine("Invalid input: " + e.Message);
+                    throw;
                 }
             }
         }
