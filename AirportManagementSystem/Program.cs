@@ -1,4 +1,6 @@
-﻿using AirportManagementSystem.Controller;
+﻿using AirportManagementSystem.Models;
+using AirportManagementSystem.Services;
+using AirportManagementSystem.Views.AirportView;
 
 namespace AirportManagementSystem
 {
@@ -7,55 +9,53 @@ namespace AirportManagementSystem
         static void Main(string[] args)
         {
             int choice = 0;
-            AirportController airportController = new AirportController();
 
             do
             {
                 Console.WriteLine("Airport Management System");
-                Console.WriteLine("1. Add Airport");
-                Console.WriteLine("2. Update Airport");
-                Console.WriteLine("3. Delete Airport");
-                Console.WriteLine("4. View All Airports");
-                Console.WriteLine("5. Search Airport");
-                Console.WriteLine("6. Exit");
+                Console.WriteLine("1. Airport");
+                Console.WriteLine("2. Airline & Aircraft");
+                Console.WriteLine("3. Flight Schedule");
+                Console.WriteLine("4. Passenger");
+                Console.WriteLine("5. Flight Booking");
+                Console.WriteLine("6. Seat Selection");
+                Console.WriteLine("7. Ticket Pricing & Payments");
+                Console.WriteLine("8. Advanced Flight Search");
+                Console.WriteLine("9. Admin & Booking Management");
+                Console.WriteLine("10. Exit");
                 Console.Write("Enter your choice: ");
 
                 choice = Convert.ToInt32(Console.ReadLine());
                 switch (choice)
                 {
                     case 1:
-                        // Add Airport
-                        if (airportController.Add() != null)
-                        {
-                            Console.WriteLine("Airport has been added !!!");
-                        }
+                        AirportMainView airportMainView = new AirportMainView();
+                        airportMainView.Run();
                         break;
                     case 2:
-                        // Update Airport
                         break;
                     case 3:
-                        // Delete Airport
-                        Console.Write("Enter id: ");
-                        int id = int.Parse(Console.ReadLine());
-
-                        airportController.Delete(id);
-
                         break;
                     case 4:
-                        // View All Airports
-                        airportController.Display();
                         break;
                     case 5:
-                        // Search Airport
                         break;
                     case 6:
+                        break;
+                    case 7:
+                        break;
+                    case 8:
+                        break;
+                    case 9:
+                        break;
+                    case 10:
                         Console.WriteLine("Exiting...");
                         break;
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");
                         break;
                 }
-            } while (choice != 6);
+            } while (choice != 10);
         }
     }
 }

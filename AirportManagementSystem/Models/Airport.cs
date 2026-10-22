@@ -5,9 +5,9 @@ namespace AirportManagementSystem.Models
     public class Airport
     {
         public int Id { get; private set; }
-        public string Name { get; private set; }
-        public string City { get; private set; }
-        public string Country { get; private set; }
+        public string Name { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
 
         public Airport(int id, string name, string city, string country)
         {

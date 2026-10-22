@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
+    <Folder Include="Database\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Data\airports.json">
+    <None Update="Database\airports.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

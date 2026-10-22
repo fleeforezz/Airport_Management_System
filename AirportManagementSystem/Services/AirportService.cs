@@ -3,63 +3,37 @@ using AirportManagementSystem.Helpers;
 using AirportManagementSystem.Interfaces;
 using AirportManagementSystem.Models;
 
-namespace AirportManagementSystem.Controller
+namespace AirportManagementSystem.Services
 {
-    public class AirportController : IRepository<Airport>
+    public class AirportService : IRepository<Airport>
     {
         private readonly string _filePath = Path.Combine(
             "..", "..", "..",
-            "Data", 
+            "Database",
             "airports.json"
         );
 
         private List<Airport> _airports;
 
-        public AirportController()
+        public AirportService()
         {
             _airports = FileHandler.ReadMultiple<Airport>(_filePath);
         }
 
-        public Airport Add()
+        public Airport Add(Airport airport)
         {
 
-            int id = Inputter.GetIntValue(
-                "Enter ID: ",
-                1,
-                99,
-                false
-                );
-
-            if (GetById(id) == null)
-            {
-                string? name = Inputter.GetStringValue(
-                "Enter airport name: ",
-                "Airport name cannot be empty."
-                );
-
-                string? city = Inputter.GetStringValue(
-                    "Enter airport city: ",
-                    "Airport city cannot be empty."
-                    );
-
-                string? country = Inputter.GetStringValue(
-                    "Enter airport country: ",
-                    "Airport country cannot be empty."
-                    );
-
-                var newAirport = new Airport(id, name, city, country);
-
-                _airports.Add(newAirport);
-                FileHandler.SaveSingle(_airports, _filePath);
-
-                return newAirport;
-            } 
-            else
+            if (GetById(airport.Id) != null)
             {
                 Console.WriteLine("Airport exists!!!");
                 return null;
             }
-            
+
+            _airports.Add(airport);
+            FileHandler.SaveSingle(_airports, _filePath);
+
+            return airport;
+
         }
 
         public void Delete(int id)
@@ -115,12 +89,33 @@ namespace AirportManagementSystem.Controller
 
         public List<Airport> Search(string query)
         {
-            throw new NotImplementedException();
+            foreach (var airport in _airports)
+            {
+                if (airport.Equals(_airports))
+                {
+                    return new List<Airport> { airport };
+                }
+            }
+            return new List<Airport>();
         }
 
         public Airport Update(Airport item)
         {
-            throw new NotImplementedException();
+            var existingAirport = GetById(item.Id);
+
+            if (existingAirport == null)
+            {
+                Console.WriteLine($"Airport with ID {item.Id} not found.");
+                return null;
+            }
+
+            existingAirport.Name = item.Name;
+            existingAirport.City = item.City;
+            existingAirport.Country = item.Country;
+
+            FileHandler.SaveSingle(_airports, _filePath);
+
+            return item;
         }
     }
 }
