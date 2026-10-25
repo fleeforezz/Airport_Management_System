@@ -47,6 +47,6 @@ TestResults/
 
 # Application specific
 logs/
-data/
+# data/
 temp/
 *.log
