@@ -1,4 +1,5 @@
-﻿using AirportManagementSystem.Models;
+﻿using AirportManagementSystem.Helpers;
+using AirportManagementSystem.Models;
 using AirportManagementSystem.Services;
 
 namespace AirportManagementSystem.Views.AirportView
@@ -10,42 +11,51 @@ namespace AirportManagementSystem.Views.AirportView
 
         public void Run()
         {
-            int choice = 0;
-            do
+            List<string> options = new()
             {
-                DisplayAirportMenu();
-                choice = Convert.ToInt32(Console.ReadLine());
+                "Add Airport",
+                "Update Airport",
+                "Delete Airport",
+                "View All Airports",
+                "Search Airport",
+                "Return to Main Menu"
+            };
+
+            bool running = true;
+
+            while (running)
+            {
+                ConsoleUI.ClearConsole();
+                ConsoleUI.ShowHeader("Airport Management System");
+                ConsoleUI.ShowMenu(options);
+                int choice = ConsoleUI.ReadUserChoice(1, options.Count);
                 switch (choice)
                 {
                     case 1:
-                        // Add Airport
                         AddAirportPrompt();
                         break;
                     case 2:
-                        // Update Airport
                         UpdateAirportPrompt();
                         break;
                     case 3:
-                        // Delete Airport
                         DeleteAirportPrompt();
                         break;
                     case 4:
-                        // View All Airports
                         DisplayAirports();
                         break;
                     case 5:
-                        // Search Airport
                         SearchAirportPrompt();
                         break;
                     case 6:
-                        // Exit
-                        Console.WriteLine("Returning to main menu...");
+                        running = false;
                         break;
                     default:
                         Console.WriteLine("Invalid choice. Please try again.");
                         break;
                 }
-            } while (choice != 6);
+
+                ConsoleUI.PauseForUserInput();
+            }
         }
 
         /*
