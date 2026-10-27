@@ -16,5 +16,11 @@
     "Name": "Long Thanh International Airport",
     "City": "Hanoi",
     "Country": "Vietnam"
+  },
+  {
+    "Id": 4,
+    "Name": "Phu Cat International Airport",
+    "City": "Quy Nhon",
+    "Country": "Vietnam"
   }
 ]

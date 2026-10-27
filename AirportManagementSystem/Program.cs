@@ -29,7 +29,7 @@ namespace AirportManagementSystem
                 ConsoleUI.ClearConsole();
 
                 ConsoleUI.ShowHeader("Airport Management System");
-                ConsoleUI.ShowMenu(options);
+                ConsoleUI.ShowMenu(options, "Options", 30);
 
                 int choice = ConsoleUI.ReadUserChoice(1, options.Count);
 

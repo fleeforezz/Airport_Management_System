@@ -17,11 +17,20 @@ namespace AirportManagementSystem.Models
             Country = country;
         }
 
+        // Display Col
+        public List<string> AirportColList()
+        {
+            return new List<string>
+            {
+                $"{"Id",-8}{"Name",-35}  {"City",-20}  {"Country",-15}"
+            };
+        }
+
         // Display Airport Information
         public String Display()
         {
             return string.Format(
-                "| {0,-8} | {1,-35} | {2,-20} | {3,-15} |",
+                "{0,-6}  {1,-35}  {2,-20}  {3,-15} |",
                 this.Id,
                 this.Name,
                 this.City,

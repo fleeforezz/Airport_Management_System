@@ -27,7 +27,7 @@ namespace AirportManagementSystem.Views.AirportView
             {
                 ConsoleUI.ClearConsole();
                 ConsoleUI.ShowHeader("Airport Management System");
-                ConsoleUI.ShowMenu(options);
+                ConsoleUI.ShowMenu(options, "Options", 30);
                 int choice = ConsoleUI.ReadUserChoice(1, options.Count);
                 switch (choice)
                 {
@@ -81,14 +81,17 @@ namespace AirportManagementSystem.Views.AirportView
          */
         public void DisplayAirports()
         {
+            ConsoleUI.ClearConsole();
             var airports = airportService.GetAll();
 
-            Console.WriteLine("| {0,-8} | {1,-35} | {2,-20} | {3,-15} |", "ID", "Name", "City", "Country");
-            Console.WriteLine(new string('-', 90));
-            foreach (var airport in airports)
-            {
-                Console.WriteLine(airport.Display());
-            }
+            ConsoleUI.ShowHeader("Airport Management System");
+            ConsoleUI.ShowListItem(
+                airports.Select(a => a.Display()).ToList(), 
+                airports.First().AirportColList(), 
+                "Airports", 
+                70
+            );
+            ConsoleUI.ShowSearchedItemsCount(airports.Count, "Airport");
         }
 
         /*

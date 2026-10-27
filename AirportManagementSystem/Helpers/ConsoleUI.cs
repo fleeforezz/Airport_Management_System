@@ -1,4 +1,7 @@
 ﻿
+using System.Data;
+using System.Reflection.Emit;
+
 namespace AirportManagementSystem.Helpers
 {
     public class ConsoleUI
@@ -30,7 +33,7 @@ namespace AirportManagementSystem.Helpers
         Show Menu
         ###############################
          */
-        public static void ShowMenu(IReadOnlyList<string> options)
+        public static void ShowMenu(IReadOnlyList<string> options, string name, int width)
         {
             if (options.Count == 0)
             {
@@ -39,9 +42,9 @@ namespace AirportManagementSystem.Helpers
             }
 
             int numberWidth = options.Count.ToString().Length;
-            int labelWidth = Math.Max(30, options.Max(option => option.Length));
+            int labelWidth = Math.Max(width, options.Max(option => option.Length));
 
-            Console.WriteLine($"   {"#".PadLeft(numberWidth + 1)}   {"Options".PadRight(labelWidth)}");
+            Console.WriteLine($"   {"#".PadLeft(numberWidth + 1)}   {name.PadRight(labelWidth)}");
             Console.WriteLine($"   {new string('-', numberWidth + 1)}   {new string('-', labelWidth)}");
 
             for (int i = 0; i < options.Count; i++)
@@ -50,6 +53,31 @@ namespace AirportManagementSystem.Helpers
             }
 
             Console.WriteLine();
+        }
+
+
+        /*
+        ###############################
+        Show List Items
+        ###############################
+         */
+        public static void ShowListItem(List<string> items, List<string> itemTitle, string name, int width)
+        {
+            if (items.Count == 0)
+            {
+                Console.WriteLine("No items available.");
+                return;
+            }
+
+            int numberWidth = items.Count.ToString().Length;
+            int labelWidth = Math.Max(width, items.Max(item => item.Length));   
+
+            Console.WriteLine($"   {"#".PadLeft(numberWidth + 1)}   {string.Join(" | ", itemTitle)}");
+            Console.WriteLine($"   {new string('-', numberWidth + 1)}   {new string('-', labelWidth)}");
+            for (int i = 0; i < items.Count; i++)
+            {
+                Console.WriteLine($"   {(i + 1).ToString().PadLeft(numberWidth + 1)}   {items[i]}");
+            }
         }
 
 
@@ -74,6 +102,19 @@ namespace AirportManagementSystem.Helpers
                 Console.WriteLine($"Invalid input. Please enter a number between {min} and {max}.");
                 Console.WriteLine();
             }
+        }
+
+
+        /*
+        ###############################
+        Show Searched Items Count
+        ###############################
+         */
+        public static void ShowSearchedItemsCount(int count, string entityName)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"   Search completed! Found {count} {entityName}s.");
+            Console.WriteLine();
         }
 
 
