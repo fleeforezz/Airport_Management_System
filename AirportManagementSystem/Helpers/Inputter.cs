@@ -30,12 +30,12 @@ namespace AirportManagementSystem.Helpers
         Get String (Custom validation)
         ###############################
          */
-        public static string getString(
-            string
-            )
-        {
+        //public static string getString(
+        //    string
+        //    )
+        //{
 
-        }
+        //}
 
         /*
         ###############################

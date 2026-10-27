@@ -12,7 +12,9 @@ namespace AirportManagementSystem
 
             do
             {
-                Console.WriteLine("Airport Management System");
+                Console.WriteLine("=============================================");
+                Console.WriteLine("          Airport Management System          ");
+                Console.WriteLine("=============================================");
                 Console.WriteLine("1. Airport");
                 Console.WriteLine("2. Airline & Aircraft");
                 Console.WriteLine("3. Flight Schedule");
