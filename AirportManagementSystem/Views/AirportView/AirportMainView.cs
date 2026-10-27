@@ -31,11 +31,11 @@ namespace AirportManagementSystem.Views.AirportView
                         break;
                     case 4:
                         // View All Airports
-                        var airports = airportService.GetAll();
-                        DisplayAirports(airports);
+                        DisplayAirports();
                         break;
                     case 5:
                         // Search Airport
+                        SearchAirportPrompt();
                         break;
                     case 6:
                         // Exit
@@ -69,8 +69,10 @@ namespace AirportManagementSystem.Views.AirportView
         Display Airports
         ###############################
          */
-        public void DisplayAirports(List<Airport> airports)
+        public void DisplayAirports()
         {
+            var airports = airportService.GetAll();
+
             Console.WriteLine("| {0,-8} | {1,-35} | {2,-20} | {3,-15} |", "ID", "Name", "City", "Country");
             Console.WriteLine(new string('-', 90));
             foreach (var airport in airports)
@@ -151,6 +153,16 @@ namespace AirportManagementSystem.Views.AirportView
 
             airportService.Delete(idToDelete);
             Console.WriteLine("Airport has been deleted !!!");
+        }
+
+        /*
+        ###############################
+        Search Airport Prompt
+        ###############################
+        */
+        public void SearchAirportPrompt()
+        {
+            
         }
     }
 }

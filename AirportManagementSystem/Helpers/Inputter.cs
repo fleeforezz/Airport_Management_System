@@ -5,15 +5,15 @@ namespace AirportManagementSystem.Helpers
     {
         /*
         ###############################
-        Get String (no empty index)
+        Get String (no empty input)
         ###############################
          */
-        public static string GetStringValue(String prompt, String emptyMessage)
+        public static string GetStringValue(string prompt, string emptyMessage)
         {
             while (true)
             {
                 Console.Write(prompt);
-                string input = Console.ReadLine();
+                var input = Console.ReadLine();
                 if (!string.IsNullOrWhiteSpace(input))
                 {
                     return input;
@@ -27,11 +27,23 @@ namespace AirportManagementSystem.Helpers
 
         /*
         ###############################
-        Get Integer (no empty index)
+        Get String (Custom validation)
+        ###############################
+         */
+        public static string getString(
+            string
+            )
+        {
+
+        }
+
+        /*
+        ###############################
+        Get Integer (no empty input)
         ###############################
          */
         public static int GetIntValue(
-            String prompt,
+            string prompt,
             int minValue, int maxValue,
             bool allowEmpty
             )
