@@ -7,6 +7,7 @@ namespace AirportManagementSystem
     {
         static void Main(string[] args)
         {
+            AirportMainView airportMainView = new AirportMainView();
 
             List<string> options = new()
             {
@@ -39,7 +40,6 @@ namespace AirportManagementSystem
                         Console.WriteLine("Opening Airport Management...");
                         ConsoleUI.ClearConsole();
 
-                        AirportMainView airportMainView = new AirportMainView();
                         airportMainView.Run();
                         break;
                     case 2:

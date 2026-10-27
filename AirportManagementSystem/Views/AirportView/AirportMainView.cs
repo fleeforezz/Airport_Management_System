@@ -101,6 +101,9 @@ namespace AirportManagementSystem.Views.AirportView
          */
         public void AddAirportPrompt()
         {
+            ConsoleUI.ClearConsole();
+            ConsoleUI.ShowHeader("Airport Management System");
+
             Console.Write("Enter ID: ");
             int id = int.Parse(Console.ReadLine());
 
@@ -130,6 +133,9 @@ namespace AirportManagementSystem.Views.AirportView
          */
         public void UpdateAirportPrompt()
         {
+            ConsoleUI.ClearConsole();
+            ConsoleUI.ShowHeader("Airport Management System");
+
             Console.Write("Enter id: ");
             int idToUpdate = int.Parse(Console.ReadLine());
 
@@ -156,6 +162,9 @@ namespace AirportManagementSystem.Views.AirportView
         */
         public void DeleteAirportPrompt()
         {
+            ConsoleUI.ClearConsole();
+            ConsoleUI.ShowHeader("Airport Management System");
+
             Console.Write("Enter id: ");
             int idToDelete = int.Parse(Console.ReadLine());
 
