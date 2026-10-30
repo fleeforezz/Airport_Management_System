@@ -10,5 +10,6 @@ namespace AirportManagementSystem.Interfaces
         void Delete(int id);
         List<T> Search(string query);
         void Display();
+        void Save();
     }
 }

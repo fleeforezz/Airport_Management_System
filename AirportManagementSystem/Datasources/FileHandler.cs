@@ -4,18 +4,36 @@ namespace AirportManagementSystem.Datasources
 {
     public class FileHandler
     {
-        public static void SaveSingle<T>(T item, string filePath)
+        public static bool SaveSingle<T>(T item, string filePath)
         {
-            string json = JsonSerializer.Serialize(item, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
-            Console.WriteLine($"Data saved to {filePath}");
+            try
+            {
+                string json = JsonSerializer.Serialize(item, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(filePath, json);
+                Console.WriteLine($"Data saved to {filePath}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving data to {filePath}: {ex.Message}");
+                return false;
+            }
         }
 
-        public static void SaveMultiple<T>(List<T> items, string filePath)
+        public static bool SaveMultiple<T>(List<T> items, string filePath)
         {
-            string json = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
-            Console.WriteLine($"Data saved to {filePath}");
+            try
+            {
+                string json = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(filePath, json);
+                Console.WriteLine($"Data saved to {filePath}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving data to {filePath}: {ex.Message}");
+                return false;
+            }
         }
 
         public static T ReadSingle<T>(string filePath)

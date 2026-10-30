@@ -104,26 +104,30 @@ namespace AirportManagementSystem.Views.AirportView
             ConsoleUI.ClearConsole();
             ConsoleUI.ShowHeader("Airport Management System");
 
-            Console.Write("Enter ID: ");
-            int id = int.Parse(Console.ReadLine());
+            int id = Inputter.GetIntValue(
+                "   Enter ID: ",
+                1, int.MaxValue,
+                false
+            );
 
-            Console.Write("Enter name: ");
-            string name = Console.ReadLine();
-
-            Console.Write("Enter city: ");
-            string city = Console.ReadLine();
-
-            Console.Write("Enter country: ");
-            string country = Console.ReadLine();
-            
-            var newAirport = new Airport(id, name, city, country);
-
-            if (airportService.Add(newAirport) == null)
+            if (airportService.GetById(id) != null)
             {
-                Console.WriteLine("Failed to add airport.");
+                Console.WriteLine("Airport with the given id already exists.");
+                return;
             }
 
-            Console.WriteLine("Airport has been added !!!");
+            Airport airport = ReadAirportInput(id);
+
+            if (airportService.Add(airport) != null)
+            {
+                Console.WriteLine("Airport has been added !!!");
+                if (Inputter.ConfirmAction("Do you want to add another airport? (y/n): "))
+                {
+                    airportService.Save();
+                }
+                Console.WriteLine("Failed to add airport.");
+            }
+            
         }
 
         /*
@@ -185,6 +189,27 @@ namespace AirportManagementSystem.Views.AirportView
         public void SearchAirportPrompt()
         {
             
+        }
+
+
+        /*
+        ###############################
+        Read Airport input
+        ###############################
+         */
+        public Airport ReadAirportInput(int id)
+        {
+            string name = Inputter.GetStringValue(
+                "   Enter name: ", 
+                "Name cannot be empty.");
+            string city = Inputter.GetStringValue(
+                "   Enter city: ", 
+                "City cannot be empty.");
+            string country = Inputter.GetStringValue(
+                "   Enter country: ", 
+                "Country cannot be empty.");
+
+            return new Airport(id, name, city, country);
         }
     }
 }

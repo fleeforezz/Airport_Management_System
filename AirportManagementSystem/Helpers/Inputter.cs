@@ -1,4 +1,6 @@
 ﻿
+using System.Text.RegularExpressions;
+
 namespace AirportManagementSystem.Helpers
 {
     public class Inputter
@@ -30,12 +32,53 @@ namespace AirportManagementSystem.Helpers
         Get String (Custom validation)
         ###############################
          */
-        //public static string getString(
-        //    string
-        //    )
-        //{
+        public static string getString(
+            string prompt,
+            Boolean allowEmpty, string emptyMessage,
+            bool allowRegex, string regexPattern, string regexMessage,
+            bool allowUnique, string uniqueMessage,
+            Predicate<string> validator
+            )
+        {
+            while (true)
+            {
+                Console.WriteLine(prompt);
+                string input = Console.ReadLine();
 
-        //}
+                if (input == null)
+                {
+                    Console.WriteLine("Input cannot be null.");
+                    continue;
+                }
+
+                if (allowEmpty && string.IsNullOrWhiteSpace(input))
+                {
+                    Console.WriteLine(emptyMessage);
+                    return string.Empty;
+                }
+
+                if (allowRegex && !string.IsNullOrWhiteSpace(regexPattern) && !Regex.IsMatch(input, regexPattern))
+                {
+                    Console.WriteLine(regexMessage);
+                    continue;
+                }
+
+                if (validator != null && !validator(input))
+                {
+                    if (allowUnique)
+                    {
+                        Console.WriteLine(uniqueMessage);
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input.");
+                    }
+                }
+
+                return input;
+            }
+        }
 
         /*
         ###############################
@@ -75,6 +118,18 @@ namespace AirportManagementSystem.Helpers
                     throw;
                 }
             }
+        }
+
+
+        /*
+        ###############################
+        Confirm Action
+        ###############################
+         */
+        public static bool ConfirmAction(string prompt)
+        {
+            Console.WriteLine(prompt + " (y/n): ");
+            return Console.ReadLine()?.Trim().ToLower() == "y";
         }
     }
 }

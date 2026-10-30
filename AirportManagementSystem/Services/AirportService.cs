@@ -30,7 +30,6 @@ namespace AirportManagementSystem.Services
             }
 
             _airports.Add(airport);
-            FileHandler.SaveSingle(_airports, _filePath);
 
             return airport;
 
@@ -85,6 +84,18 @@ namespace AirportManagementSystem.Services
                 return null;
             }
             return airport;
+        }
+
+        public void Save()
+        {
+            if (FileHandler.SaveSingle(_airports, _filePath))
+            {
+                Console.WriteLine("Airports saved successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to save airports.");
+            }
         }
 
         public List<Airport> Search(string query)
