@@ -121,7 +121,7 @@ namespace AirportManagementSystem.Views.AirportView
             if (airportService.Add(airport) != null)
             {
                 Console.WriteLine("Airport has been added !!!");
-                if (Inputter.ConfirmAction("Do you want to add another airport? (y/n): "))
+                if (Inputter.ConfirmAction("Do you want to save this airport? ")) 
                 {
                     airportService.Save();
                 }
