@@ -20,6 +20,11 @@ namespace AirportManagementSystem.Services
             _airports = FileHandler.ReadMultiple<Airport>(_filePath);
         }
 
+        /*
+        ###############################
+        Add Airports Service
+        ###############################
+         */
         public Airport Add(Airport airport)
         {
 
@@ -35,19 +40,24 @@ namespace AirportManagementSystem.Services
 
         }
 
-        public void Delete(int id)
+
+        /*
+        ###############################
+        Delete Airports Service
+        ###############################
+         */
+        public bool Delete(int id)
         {
-            if (GetById(id) != null)
-            {
-                _airports.Remove(GetById(id));
-                Console.WriteLine("Remove success");
-            }
-            else
-            {
-                Console.WriteLine($"Airport with ID {id} not found");
-            }
+            _airports.Remove(GetById(id));
+            return true;
         }
 
+
+        /*
+        ###############################
+        Display Airports Service
+        ###############################
+         */
         public void Display()
         {
             string header = "| {\"ID\",-8} | {\"Name\",-35} | {\"City\",-20} | {\"Country\",-15} |";
@@ -71,11 +81,23 @@ namespace AirportManagementSystem.Services
             Console.WriteLine(new string('-', 90));
         }
 
+
+        /*
+        ###############################
+        Get All Airports Service
+        ###############################
+         */
         public List<Airport> GetAll()
         {
             return _airports;
         }
 
+
+        /*
+        ###############################
+        Get Airport by ID Service
+        ###############################
+         */
         public Airport? GetById(int id)
         {
             var airport = _airports.FirstOrDefault(a => a.Id == id);
@@ -86,18 +108,30 @@ namespace AirportManagementSystem.Services
             return airport;
         }
 
+
+        /*
+        ###############################
+        Save Airports Service
+        ###############################
+         */
         public void Save()
         {
             if (FileHandler.SaveSingle(_airports, _filePath))
             {
-                Console.WriteLine("Airports saved successfully.");
+                Console.WriteLine("   Airports saved successfully.");
             }
             else
             {
-                Console.WriteLine("Failed to save airports.");
+                Console.WriteLine("   Failed to save airports.");
             }
         }
 
+
+        /*
+        ###############################
+        Search Airports Service
+        ###############################
+         */
         public List<Airport> Search(string query)
         {
             foreach (var airport in _airports)
@@ -110,6 +144,12 @@ namespace AirportManagementSystem.Services
             return new List<Airport>();
         }
 
+
+        /*
+        ###############################
+        Update Airports Service
+        ###############################
+         */
         public Airport Update(Airport item)
         {
             var existingAirport = GetById(item.Id);
@@ -124,9 +164,7 @@ namespace AirportManagementSystem.Services
             existingAirport.City = item.City;
             existingAirport.Country = item.Country;
 
-            FileHandler.SaveSingle(_airports, _filePath);
-
-            return item;
+            return existingAirport;
         }
     }
 }

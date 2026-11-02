@@ -10,20 +10,29 @@ namespace AirportManagementSystem.Helpers
         Get String (no empty input)
         ###############################
          */
-        public static string GetStringValue(string prompt, string emptyMessage)
+        public static string GetStringValue(
+            string prompt,
+            bool allowEmpty,
+            string emptyMessage
+            )
         {
             while (true)
             {
                 Console.Write(prompt);
                 var input = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(input))
+
+                if (input == null)
                 {
-                    return input;
+                    return emptyMessage;
                 }
-                else
+
+                if (string.IsNullOrWhiteSpace(input) && !allowEmpty)
                 {
                     Console.WriteLine(emptyMessage);
+                    continue;
                 }
+
+                return input;
             }
         }
 
@@ -34,7 +43,7 @@ namespace AirportManagementSystem.Helpers
          */
         public static string getString(
             string prompt,
-            Boolean allowEmpty, string emptyMessage,
+            bool allowEmpty, string emptyMessage,
             bool allowRegex, string regexPattern, string regexMessage,
             bool allowUnique, string uniqueMessage,
             Predicate<string> validator
@@ -94,19 +103,19 @@ namespace AirportManagementSystem.Helpers
             while (true)
             {
                 Console.Write(prompt);
-                string input = Console.ReadLine();
+                var input = Console.ReadLine();
 
-                if (string.IsNullOrWhiteSpace(input))
+                if (string.IsNullOrWhiteSpace(input) && allowEmpty)
                 {
                     return -1;
                 }
 
                 try
                 {
-                    int number = Convert.ToInt32(input);
+                    var number = Convert.ToInt32(input);
                     if (number < minValue && number > maxValue)
                     {
-                        Console.WriteLine($"Please enter a value between {minValue} and {maxValue}.");
+                        Console.WriteLine($"   Please enter a value between {minValue} and {maxValue}.");
                         continue;
                     }
 
@@ -114,8 +123,7 @@ namespace AirportManagementSystem.Helpers
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Invalid input: " + e.Message);
-                    throw;
+                    Console.WriteLine("   Invalid input: " + e.Message);
                 }
             }
         }
@@ -128,7 +136,7 @@ namespace AirportManagementSystem.Helpers
          */
         public static bool ConfirmAction(string prompt)
         {
-            Console.WriteLine(prompt + " (y/n): ");
+            Console.Write(   prompt + " (y/n): ");
             return Console.ReadLine()?.Trim().ToLower() == "y";
         }
     }

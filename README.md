@@ -252,6 +252,9 @@ Recommended practices:
 
 **Important:** JSON files are suitable for this learning project, but they do not automatically provide database transactions or safe concurrent access.
 
+## 📚 Entity Relationship
+
+
 ## 🧠 Concepts to Practice
 
 | Concept | Where to practice |

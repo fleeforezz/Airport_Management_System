@@ -7,28 +7,28 @@ namespace AirportManagementSystem.Views.AirportView
     public class AirportMainView
     {
 
-        AirportService airportService = new AirportService();
+        private readonly AirportService _airportService = new AirportService();
 
         public void Run()
         {
-            List<string> options = new()
-            {
+            List<string> options =
+            [
                 "Add Airport",
                 "Update Airport",
                 "Delete Airport",
                 "View All Airports",
                 "Search Airport",
                 "Return to Main Menu"
-            };
+            ];
 
-            bool running = true;
+            var running = true;
 
             while (running)
             {
                 ConsoleUI.ClearConsole();
                 ConsoleUI.ShowHeader("Airport Management System");
                 ConsoleUI.ShowMenu(options, "Options", 30);
-                int choice = ConsoleUI.ReadUserChoice(1, options.Count);
+                var choice = ConsoleUI.ReadUserChoice(1, options.Count);
                 switch (choice)
                 {
                     case 1:
@@ -60,38 +60,39 @@ namespace AirportManagementSystem.Views.AirportView
 
         /*
         ###############################
-        Display Airport Menu
-        ###############################
-         */
-        public void DisplayAirportMenu()
-        {
-            Console.WriteLine("1. Add Airport");
-            Console.WriteLine("2. Update Airport");
-            Console.WriteLine("3. Delete Airport");
-            Console.WriteLine("4. View All Airports");
-            Console.WriteLine("5. Search Airport");
-            Console.WriteLine("6. Exit");
-            Console.Write("Enter your choice: ");
-        }
-
-        /*
-        ###############################
         Display Airports
         ###############################
          */
-        public void DisplayAirports()
+        private void DisplayAirports()
         {
             ConsoleUI.ClearConsole();
-            var airports = airportService.GetAll();
-
             ConsoleUI.ShowHeader("Airport Management System");
-            ConsoleUI.ShowListItem(
-                airports.Select(a => a.Display()).ToList(), 
-                airports.First().AirportColList(), 
-                "Airports", 
-                70
-            );
-            ConsoleUI.ShowSearchedItemsCount(airports.Count, "Airport");
+
+            try
+            {
+                var airports = _airportService.GetAll();
+
+                if (airports.Count == 0)
+                {
+                    ConsoleUI.ConsoleNotification(
+                        "No items available.",
+                        ConsoleColor.DarkGray);
+                    return;
+                }
+
+                ConsoleUI.ShowListItem(
+                    airports.Select(a => a.Display()).ToList(),
+                    airports.First().AirportColList(),
+                    "Airports",
+                    70
+                );
+                ConsoleUI.ShowSearchedItemsCount(airports.Count, "Airport");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
         }
 
         /*
@@ -99,33 +100,44 @@ namespace AirportManagementSystem.Views.AirportView
         Add Airport Prompt
         ###############################
          */
-        public void AddAirportPrompt()
+        private void AddAirportPrompt()
         {
             ConsoleUI.ClearConsole();
             ConsoleUI.ShowHeader("Airport Management System");
 
-            int id = Inputter.GetIntValue(
+            var id = Inputter.GetIntValue(
                 "   Enter ID: ",
                 1, int.MaxValue,
                 false
             );
 
-            if (airportService.GetById(id) != null)
+            if (_airportService.GetById(id) != null)
             {
-                Console.WriteLine("Airport with the given id already exists.");
+                Console.WriteLine("   Airport with the given id already exists.");
                 return;
             }
 
-            Airport airport = ReadAirportInput(id);
+            var name = Inputter.GetStringValue(
+                "   Enter name: ",
+                false, "Name cannot be empty.");
 
-            if (airportService.Add(airport) != null)
+            var city = Inputter.GetStringValue(
+                "   Enter city: ",
+                false, "City cannot be empty.");
+
+            var country = Inputter.GetStringValue(
+                "   Enter country: ",
+                false, "Country cannot be empty.");
+
+            var airport = new Airport(id, name,  city, country);
+
+            if (_airportService.Add(airport) != null)
             {
-                Console.WriteLine("Airport has been added !!!");
-                if (Inputter.ConfirmAction("Do you want to save this airport? ")) 
+                if (Inputter.ConfirmAction("   Do you want to save this airport? "))
                 {
-                    airportService.Save();
+                    _airportService.Save();
+                    Console.WriteLine("   Airport has been added !!!");
                 }
-                Console.WriteLine("Failed to add airport.");
             }
             
         }
@@ -135,28 +147,73 @@ namespace AirportManagementSystem.Views.AirportView
         Update Airport Prompt
         ###############################
          */
-        public void UpdateAirportPrompt()
+        private void UpdateAirportPrompt()
         {
             ConsoleUI.ClearConsole();
             ConsoleUI.ShowHeader("Airport Management System");
 
-            Console.Write("Enter id: ");
-            int idToUpdate = int.Parse(Console.ReadLine());
+            var idToUpdate = Inputter.GetIntValue(
+                "   Enter id: ",
+                1, int.MaxValue,
+                false
+                );
 
-            if (airportService.GetById(idToUpdate) == null)
+            try
             {
-                Console.WriteLine("Airport with the given id does not exist.");
+                var existingAirport = _airportService.GetById(idToUpdate);
+
+                if (existingAirport == null)
+                {
+                    ConsoleUI.ConsoleNotification(
+                        "Airport with the given id does not exist.",
+                        ConsoleColor.DarkRed);
+                }
+
+                ConsoleUI.ConsoleNotification(
+                    $"Airport found: {existingAirport.Name}",
+                    ConsoleColor.Green);
+
+                string name = Inputter.GetStringValue(
+                    "   Enter name: ",
+                    true, "");
+                if (name.Length == 0) name = existingAirport.Name;
+
+                string city = Inputter.GetStringValue(
+                    "   Enter city: ",
+                    true, "");
+                if (city.Length == 0) city = existingAirport.City;
+
+                string country = Inputter.GetStringValue(
+                    "   Enter country: ",
+                    true, "");
+                if (country.Length == 0) country = existingAirport.Country;
+
+                if (name.Length == 0 || city.Length == 0 || country.Length == 0 &&
+                    city.Equals(existingAirport.Name) ||
+                    country.Equals(existingAirport.Country)
+                    )
+                {
+                    ConsoleUI.ConsoleNotification(
+                        "No changes",
+                        ConsoleColor.DarkGray);
+                }
+
+                var updatedAirport = new Airport(idToUpdate, name, city, country);
+
+                if (_airportService.Update(updatedAirport) != null)
+                {
+                    if (Inputter.ConfirmAction("   Do you want to update this airport? "))
+                    {
+                        _airportService.Save();
+                        Console.WriteLine("   Airport has been updated !!!");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
 
-            Console.Write("Enter new name: ");
-            string newName = Console.ReadLine();
-            Console.Write("Enter new city: ");
-            string newCity = Console.ReadLine();
-            Console.Write("Enter new country: ");
-            string newCountry = Console.ReadLine();
-
-            var updatedAirport = new Airport(idToUpdate, newName, newCity, newCountry);
-            airportService.Update(updatedAirport);
         }
 
         /*
@@ -164,21 +221,45 @@ namespace AirportManagementSystem.Views.AirportView
         Delete Airport Prompt
         ###############################
         */
-        public void DeleteAirportPrompt()
+        private void DeleteAirportPrompt()
         {
             ConsoleUI.ClearConsole();
             ConsoleUI.ShowHeader("Airport Management System");
 
-            Console.Write("Enter id: ");
-            int idToDelete = int.Parse(Console.ReadLine());
+            var idToDelete = Inputter.GetIntValue(
+                "   Enter id: ",
+                1, int.MaxValue,
+                false
+            );
 
-            if (airportService.GetById(idToDelete) == null)
+            try
             {
-                Console.WriteLine("Airport with the given id does not exist.");
-            }
+                var existingAirport = _airportService.GetById(idToDelete);
 
-            airportService.Delete(idToDelete);
-            Console.WriteLine("Airport has been deleted !!!");
+                if (existingAirport == null)
+                {
+                    ConsoleUI.ConsoleNotification(
+                        "Airport with the given id does not exist.",
+                        ConsoleColor.DarkRed);
+                }
+
+                ConsoleUI.ConsoleNotification(
+                    $"Airport found: {existingAirport.Name}",
+                    ConsoleColor.Green);
+
+                if (_airportService.Delete(idToDelete))
+                {
+                    if (Inputter.ConfirmAction("   Do you want to remove this airport? "))
+                    {
+                        _airportService.Save();
+                        Console.WriteLine("   Airport has been deleted !!!");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         /*
@@ -186,30 +267,9 @@ namespace AirportManagementSystem.Views.AirportView
         Search Airport Prompt
         ###############################
         */
-        public void SearchAirportPrompt()
+        private void SearchAirportPrompt()
         {
             
-        }
-
-
-        /*
-        ###############################
-        Read Airport input
-        ###############################
-         */
-        public Airport ReadAirportInput(int id)
-        {
-            string name = Inputter.GetStringValue(
-                "   Enter name: ", 
-                "Name cannot be empty.");
-            string city = Inputter.GetStringValue(
-                "   Enter city: ", 
-                "City cannot be empty.");
-            string country = Inputter.GetStringValue(
-                "   Enter country: ", 
-                "Country cannot be empty.");
-
-            return new Airport(id, name, city, country);
         }
     }
 }

@@ -35,19 +35,13 @@ namespace AirportManagementSystem.Helpers
          */
         public static void ShowMenu(IReadOnlyList<string> options, string name, int width)
         {
-            if (options.Count == 0)
-            {
-                Console.WriteLine("No options available.");
-                return;
-            }
-
-            int numberWidth = options.Count.ToString().Length;
-            int labelWidth = Math.Max(width, options.Max(option => option.Length));
+            var numberWidth = options.Count.ToString().Length;
+            var labelWidth = Math.Max(width, options.Max(option => option.Length));
 
             Console.WriteLine($"   {"#".PadLeft(numberWidth + 1)}   {name.PadRight(labelWidth)}");
             Console.WriteLine($"   {new string('-', numberWidth + 1)}   {new string('-', labelWidth)}");
 
-            for (int i = 0; i < options.Count; i++)
+            for (var i = 0; i < options.Count; i++)
             {
                 Console.WriteLine($"   {(i + 1).ToString().PadLeft(numberWidth + 1)}   {options[i]}");
             }
@@ -63,18 +57,12 @@ namespace AirportManagementSystem.Helpers
          */
         public static void ShowListItem(List<string> items, List<string> itemTitle, string name, int width)
         {
-            if (items.Count == 0)
-            {
-                Console.WriteLine("No items available.");
-                return;
-            }
-
-            int numberWidth = items.Count.ToString().Length;
-            int labelWidth = Math.Max(width, items.Max(item => item.Length));   
+            var numberWidth = items.Count.ToString().Length;
+            var labelWidth = Math.Max(width, items.Max(item => item.Length));
 
             Console.WriteLine($"   {"#".PadLeft(numberWidth + 1)}   {string.Join(" | ", itemTitle)}");
             Console.WriteLine($"   {new string('-', numberWidth + 1)}   {new string('-', labelWidth)}");
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 Console.WriteLine($"   {(i + 1).ToString().PadLeft(numberWidth + 1)}   {items[i]}");
             }
@@ -151,6 +139,19 @@ namespace AirportManagementSystem.Helpers
         public static void ClearConsole()
         {
             Console.Clear();
+        }
+
+
+        /*
+        ###############################
+        Console Notification
+        ###############################
+         */
+        public static void ConsoleNotification(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine($"   * {message}\n");
+            Console.ResetColor();
         }
     }
 }

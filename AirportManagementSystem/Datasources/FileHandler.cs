@@ -10,12 +10,12 @@ namespace AirportManagementSystem.Datasources
             {
                 string json = JsonSerializer.Serialize(item, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(filePath, json);
-                Console.WriteLine($"Data saved to {filePath}");
+                Console.WriteLine($"   Data saved to {filePath}");
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error saving data to {filePath}: {ex.Message}");
+                Console.WriteLine($"   Error saving data to {filePath}: {ex.Message}");
                 return false;
             }
         }
@@ -26,12 +26,12 @@ namespace AirportManagementSystem.Datasources
             {
                 string json = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(filePath, json);
-                Console.WriteLine($"Data saved to {filePath}");
+                Console.WriteLine($"   Data saved to {filePath}");
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error saving data to {filePath}: {ex.Message}");
+                Console.WriteLine($"   Error saving data to {filePath}: {ex.Message}");
                 return false;
             }
         }
@@ -40,7 +40,7 @@ namespace AirportManagementSystem.Datasources
         {
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"File not found: {filePath}");
+                throw new FileNotFoundException($"   File not found: {filePath}");
             }
             string json = File.ReadAllText(filePath);
             T item = JsonSerializer.Deserialize<T>(json);
@@ -51,7 +51,7 @@ namespace AirportManagementSystem.Datasources
         {
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"File not found: {filePath}");
+                throw new FileNotFoundException($"   File not found: {filePath}");
             }
             string json = File.ReadAllText(filePath);
             List<T> items = JsonSerializer.Deserialize<List<T>>(json);
