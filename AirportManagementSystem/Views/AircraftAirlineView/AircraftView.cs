@@ -41,7 +41,7 @@ public class AircraftView
                     // DeleteAirportPrompt();
                     break;
                 case 4:
-                    // DisplayAirports();
+                    DisplayAircraftsPrompt();
                     break;
                 case 5:
                     // SearchAirportPrompt();
@@ -56,5 +56,42 @@ public class AircraftView
 
             ConsoleUI.PauseForUserInput();
         }
+    }
+
+    /*
+    ###############################
+    Display Aircrafts
+    ###############################
+    */
+    private void DisplayAircraftsPrompt()
+    {
+        ConsoleUI.ClearConsole();
+        ConsoleUI.ShowHeader("Airport Management System");
+
+        try
+        {
+            var airports = _aircraftService.GetAll();
+
+            if (airports.Count == 0)
+            {
+                ConsoleUI.ConsoleNotification(
+                    "No items available.",
+                    ConsoleColor.DarkGray);
+                return;
+            }
+
+            ConsoleUI.ShowListItem(
+                airports.Select(a => a.Display()).ToList(),
+                airports.First().AircraftColList(),
+                "Airports",
+                70
+            );
+            ConsoleUI.ShowSearchedItemsCount(airports.Count, "Aircraft");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"An error occured: {e.Message}");
+        }
+
     }
 }

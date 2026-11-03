@@ -17,8 +17,8 @@ namespace AirportManagementSystem.Models
         public Aircraft(int id, string model, string registrationNumber, int capacity)
         {
             Id = id;
-            Model = model;
             RegistrationNumber = registrationNumber;
+            Model = model;
             Capacity = capacity;
         }
 
@@ -27,7 +27,7 @@ namespace AirportManagementSystem.Models
         {
             return new List<string>
             {
-                $"{"Id",-8}{"Model",-35}  {"Registration Number",-20}  {"Capacity",-10}"
+                $"{"Id",-8}{"Registration Number",-35}  {"Model",-20}  {"Capacity",-10}"
             };
         }
 
@@ -37,8 +37,8 @@ namespace AirportManagementSystem.Models
             return string.Format(
                 "{0,-6}  {1,-35}  {2,-20}  {3,-10} |",
                 this.Id,
-                this.Model,
                 this.RegistrationNumber,
+                this.Model,
                 this.Capacity
             );
         }

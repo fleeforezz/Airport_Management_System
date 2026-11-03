@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "Id": 1,
+    "RegistrationNumber": "NV1288292",
+    "Model": "A320",
+    "Capacity": 120,
+    "AirlineId": 1
+  }
+]

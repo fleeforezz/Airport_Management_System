@@ -21,7 +21,7 @@ namespace AirportManagementSystem.Services
 
         public List<Aircraft> GetAll()
         {
-            throw new NotImplementedException();
+            return _aircrafts;
         }
 
         public Aircraft? GetById(int id)
