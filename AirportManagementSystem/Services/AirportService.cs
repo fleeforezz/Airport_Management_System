@@ -11,10 +11,10 @@ namespace AirportManagementSystem.Services
         private readonly string _filePath = Path.Combine(
             "..", "..", "..",
             "Database",
-            "airports.json"
+            "airport.json"
         );
 
-        private List<Airport> _airports;
+        private readonly List<Airport> _airports;
 
         public AirportService()
         {

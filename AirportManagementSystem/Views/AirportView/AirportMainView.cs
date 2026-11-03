@@ -7,7 +7,7 @@ namespace AirportManagementSystem.Views.AirportView
     public class AirportMainView
     {
 
-        private readonly AirportService _airportService = new AirportService();
+        private readonly AirportService _airportService = new();
 
         public void Run()
         {
@@ -28,7 +28,7 @@ namespace AirportManagementSystem.Views.AirportView
                 ConsoleUI.ClearConsole();
                 ConsoleUI.ShowHeader("Airport Management System");
                 ConsoleUI.ShowMenu(options, "Options", 30);
-                
+
                 var choice = ConsoleUI.ReadUserChoice(1, options.Count);
 
                 switch (choice)

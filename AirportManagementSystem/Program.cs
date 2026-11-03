@@ -1,4 +1,5 @@
 ﻿using AirportManagementSystem.Helpers;
+using AirportManagementSystem.Views.AircraftAirlineView;
 using AirportManagementSystem.Views.AirportView;
 
 namespace AirportManagementSystem
@@ -7,10 +8,11 @@ namespace AirportManagementSystem
     {
         static void Main(string[] args)
         {
-            AirportMainView airportMainView = new AirportMainView();
+            var airportMainView = new AirportMainView();
+            var airlineAircraftMainView = new AirlineAircraftMainView();
 
-            List<string> options = new()
-            {
+            List<string> options =
+            [
                 "Airport",
                 "Airline & Aircraft",
                 "Flight Schedule",
@@ -21,7 +23,7 @@ namespace AirportManagementSystem
                 "Advanced Flight Search",
                 "Admin & Booking Management",
                 "Exit"
-            };
+            ];
 
             bool running = true;
 
@@ -32,7 +34,7 @@ namespace AirportManagementSystem
                 ConsoleUI.ShowHeader("Airport Management System");
                 ConsoleUI.ShowMenu(options, "Options", 30);
 
-                int choice = ConsoleUI.ReadUserChoice(1, options.Count);
+                var choice = ConsoleUI.ReadUserChoice(1, options.Count);
 
                 switch (choice)
                 {
@@ -45,6 +47,8 @@ namespace AirportManagementSystem
                     case 2:
                         Console.WriteLine("Opening Airline & Aircraft Management...");
                         ConsoleUI.ClearConsole();
+
+                        airlineAircraftMainView.Run();
                         break;
                     case 3:
                         Console.WriteLine("Opening Flight Schedule Management...");
