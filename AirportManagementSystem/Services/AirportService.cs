@@ -28,15 +28,7 @@ namespace AirportManagementSystem.Services
          */
         public Airport Add(Airport airport)
         {
-
-            if (GetById(airport.Id) != null)
-            {
-                Console.WriteLine("Airport exists!!!");
-                return null;
-            }
-
             _airports.Add(airport);
-
             return airport;
 
         }
@@ -102,10 +94,6 @@ namespace AirportManagementSystem.Services
         public Airport? GetById(int id)
         {
             var airport = _airports.FirstOrDefault(a => a.Id == id);
-            if (airport == null)
-            {
-                return null;
-            }
             return airport;
         }
 

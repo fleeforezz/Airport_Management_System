@@ -24,19 +24,44 @@ namespace AirportManagementSystem.Services
             return _aircrafts;
         }
 
+
+        /*
+        ###############################
+        Get Aircraft by ID Service
+        ###############################
+         */
         public Aircraft? GetById(int id)
         {
-            throw new NotImplementedException();
+            var aircraft = _aircrafts.FirstOrDefault(a => a.Id == id);
+            return aircraft;
         }
 
-        public Aircraft Add(Aircraft item)
+
+        /*
+        ###############################
+        Add Aircraft Service
+        ###############################
+         */
+        public Aircraft Add(Aircraft aircraft)
         {
-            throw new NotImplementedException();
+            _aircrafts.Add(aircraft);
+            return aircraft;
         }
 
-        public Aircraft Update(Aircraft item)
+
+        /*
+        ###############################
+        Update Aircraft Service
+        ###############################
+         */
+        public Aircraft Update(Aircraft aircraft)
         {
-            throw new NotImplementedException();
+            var existing = GetById(aircraft.Id);
+
+            if (existing == null)
+            {
+
+            }
         }
 
         public bool Delete(int id)

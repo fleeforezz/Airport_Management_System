@@ -60,7 +60,7 @@ public class AircraftView
 
     /*
     ###############################
-    Display Aircrafts
+    Display Aircrafts Prompt
     ###############################
     */
     private void DisplayAircraftsPrompt()
@@ -92,6 +92,30 @@ public class AircraftView
         {
             Console.WriteLine($"An error occured: {e.Message}");
         }
+    }
 
+    /*
+    ###############################
+    Add Aircraft Prompt
+    ###############################
+    */
+    private void AddAircraftsPrompt()
+    {
+        ConsoleUi.ClearConsole();
+        ConsoleUi.ShowHeader("Airport Management System");
+
+        var id = Inputter.GetIntValue(
+            "   Enter ID: ",
+            1, int.MaxValue,
+            false
+        );
+
+        if (_aircraftService.GetById(id) != null)
+        {
+            ConsoleUi.ConsoleNotification(
+                "   Airport with the given id already exists.",
+                ConsoleColor.DarkGray);
+            return;
+        }
     }
 }
