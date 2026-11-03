@@ -25,11 +25,11 @@ namespace AirportManagementSystem.Views.AirportView
 
             while (running)
             {
-                ConsoleUI.ClearConsole();
-                ConsoleUI.ShowHeader("Airport Management System");
-                ConsoleUI.ShowMenu(options, "Options", 30);
+                ConsoleUi.ClearConsole();
+                ConsoleUi.ShowHeader("Airport Management System");
+                ConsoleUi.ShowMenu(options, "Options", 30);
 
-                var choice = ConsoleUI.ReadUserChoice(1, options.Count);
+                var choice = ConsoleUi.ReadUserChoice(1, options.Count);
 
                 switch (choice)
                 {
@@ -56,7 +56,7 @@ namespace AirportManagementSystem.Views.AirportView
                         break;
                 }
 
-                ConsoleUI.PauseForUserInput();
+                ConsoleUi.PauseForUserInput();
             }
         }
 
@@ -67,8 +67,8 @@ namespace AirportManagementSystem.Views.AirportView
          */
         private void DisplayAirports()
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
 
             try
             {
@@ -76,19 +76,19 @@ namespace AirportManagementSystem.Views.AirportView
 
                 if (airports.Count == 0)
                 {
-                    ConsoleUI.ConsoleNotification(
+                    ConsoleUi.ConsoleNotification(
                         "No items available.",
                         ConsoleColor.DarkGray);
                     return;
                 }
 
-                ConsoleUI.ShowListItem(
+                ConsoleUi.ShowListItem(
                     airports.Select(a => a.Display()).ToList(),
                     airports.First().AirportColList(),
                     "Airports",
                     70
                 );
-                ConsoleUI.ShowSearchedItemsCount(airports.Count, "Airport");
+                ConsoleUi.ShowSearchedItemsCount(airports.Count, "Airport");
             }
             catch (Exception e)
             {
@@ -104,8 +104,8 @@ namespace AirportManagementSystem.Views.AirportView
          */
         private void AddAirportPrompt()
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
 
             var id = Inputter.GetIntValue(
                 "   Enter ID: ",
@@ -115,7 +115,7 @@ namespace AirportManagementSystem.Views.AirportView
 
             if (_airportService.GetById(id) != null)
             {
-                ConsoleUI.ConsoleNotification(
+                ConsoleUi.ConsoleNotification(
                     "   Airport with the given id already exists.",
                     ConsoleColor.DarkGray);
                 return;
@@ -153,8 +153,8 @@ namespace AirportManagementSystem.Views.AirportView
          */
         private void UpdateAirportPrompt()
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
 
             var idToUpdate = Inputter.GetIntValue(
                 "   Enter id: ",
@@ -168,13 +168,13 @@ namespace AirportManagementSystem.Views.AirportView
 
                 if (existingAirport == null)
                 {
-                    ConsoleUI.ConsoleNotification(
+                    ConsoleUi.ConsoleNotification(
                         "Airport with the given id does not exist.",
                         ConsoleColor.DarkRed);
                     return;
                 }
 
-                ConsoleUI.ConsoleNotification(
+                ConsoleUi.ConsoleNotification(
                     $"Airport found: {existingAirport.Name}",
                     ConsoleColor.Green);
 
@@ -198,7 +198,7 @@ namespace AirportManagementSystem.Views.AirportView
                     country.Equals(existingAirport.Country)
                     )
                 {
-                    ConsoleUI.ConsoleNotification(
+                    ConsoleUi.ConsoleNotification(
                         "No changes",
                         ConsoleColor.DarkGray);
                 }
@@ -228,8 +228,8 @@ namespace AirportManagementSystem.Views.AirportView
         */
         private void DeleteAirportPrompt()
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
 
             var idToDelete = Inputter.GetIntValue(
                 "   Enter id: ",
@@ -243,13 +243,13 @@ namespace AirportManagementSystem.Views.AirportView
 
                 if (existingAirport == null)
                 {
-                    ConsoleUI.ConsoleNotification(
+                    ConsoleUi.ConsoleNotification(
                         "Airport with the given id does not exist.",
                         ConsoleColor.DarkRed);
                     return;
                 }
 
-                ConsoleUI.ConsoleNotification(
+                ConsoleUi.ConsoleNotification(
                     $"Airport found: {existingAirport.Name}",
                     ConsoleColor.Green);
 
@@ -275,8 +275,8 @@ namespace AirportManagementSystem.Views.AirportView
         */
         private void SearchAirportPrompt()
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
 
             var name = Inputter.GetStringValue(
                 "   Enter airport name: ",
@@ -288,19 +288,19 @@ namespace AirportManagementSystem.Views.AirportView
 
                 if (airports.Count == 0)
                 {
-                    ConsoleUI.ConsoleNotification(
+                    ConsoleUi.ConsoleNotification(
                         "No items available.",
                         ConsoleColor.DarkGray);
                     return;
                 }
 
-                ConsoleUI.ShowListItem(
+                ConsoleUi.ShowListItem(
                     airports.Select(a => a.Display()).ToList(),
                     airports.First().AirportColList(),
                     "Airports",
                     70
                 );
-                ConsoleUI.ShowSearchedItemsCount(airports.Count, "Airport");
+                ConsoleUi.ShowSearchedItemsCount(airports.Count, "Airport");
             }
             catch (Exception e)
             {

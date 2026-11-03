@@ -29,54 +29,54 @@ namespace AirportManagementSystem
 
             while (running)
             {
-                ConsoleUI.ClearConsole();
+                ConsoleUi.ClearConsole();
 
-                ConsoleUI.ShowHeader("Airport Management System");
-                ConsoleUI.ShowMenu(options, "Options", 30);
+                ConsoleUi.ShowHeader("Airport Management System");
+                ConsoleUi.ShowMenu(options, "Options", 30);
 
-                var choice = ConsoleUI.ReadUserChoice(1, options.Count);
+                var choice = ConsoleUi.ReadUserChoice(1, options.Count);
 
                 switch (choice)
                 {
                     case 1:
                         Console.WriteLine("Opening Airport Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
 
                         airportMainView.Run();
                         break;
                     case 2:
                         Console.WriteLine("Opening Airline & Aircraft Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
 
                         airlineAircraftMainView.Run();
                         break;
                     case 3:
                         Console.WriteLine("Opening Flight Schedule Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 4:
                         Console.WriteLine("Opening Passenger Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 5:
                         Console.WriteLine("Opening Flight Booking Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 6:
                         Console.WriteLine("Opening Seat Selection Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 7:
                         Console.WriteLine("Opening Ticket Pricing & Payments Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 8:
                         Console.WriteLine("Opening Advanced Flight Search...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 9:
                         Console.WriteLine("Opening Admin & Booking Management...");
-                        ConsoleUI.ClearConsole();
+                        ConsoleUi.ClearConsole();
                         break;
                     case 10:
                         running = false;
@@ -84,7 +84,7 @@ namespace AirportManagementSystem
                         continue;
                 }
 
-                ConsoleUI.PauseForUserInput();
+                ConsoleUi.PauseForUserInput();
             }
         }
     }

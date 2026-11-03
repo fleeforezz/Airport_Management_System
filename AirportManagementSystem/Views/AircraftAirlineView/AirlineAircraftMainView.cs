@@ -20,11 +20,11 @@ public class AirlineAircraftMainView
 
         while (running)
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
-            ConsoleUI.ShowMenu(options, "Options", 30);
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
+            ConsoleUi.ShowMenu(options, "Options", 30);
 
-            var choice = ConsoleUI.ReadUserChoice(1, options.Count);
+            var choice = ConsoleUi.ReadUserChoice(1, options.Count);
 
             switch (choice)
             {
@@ -41,7 +41,7 @@ public class AirlineAircraftMainView
                     break;
             }
 
-            ConsoleUI.PauseForUserInput();
+            ConsoleUi.PauseForUserInput();
         }
     }
 }

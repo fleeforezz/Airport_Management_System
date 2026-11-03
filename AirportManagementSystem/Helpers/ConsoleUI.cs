@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 
 namespace AirportManagementSystem.Helpers
 {
-    public class ConsoleUI
+    public class ConsoleUi
     {
         private const int Padding = 3;
 

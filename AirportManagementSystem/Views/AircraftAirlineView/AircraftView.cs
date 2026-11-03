@@ -23,11 +23,11 @@ public class AircraftView
 
         while (running)
         {
-            ConsoleUI.ClearConsole();
-            ConsoleUI.ShowHeader("Airport Management System");
-            ConsoleUI.ShowMenu(options, "Options", 30);
+            ConsoleUi.ClearConsole();
+            ConsoleUi.ShowHeader("Airport Management System");
+            ConsoleUi.ShowMenu(options, "Options", 30);
 
-            var choice = ConsoleUI.ReadUserChoice(1, options.Count);
+            var choice = ConsoleUi.ReadUserChoice(1, options.Count);
 
             switch (choice)
             {
@@ -54,7 +54,7 @@ public class AircraftView
                     break;
             }
 
-            ConsoleUI.PauseForUserInput();
+            ConsoleUi.PauseForUserInput();
         }
     }
 
@@ -65,8 +65,8 @@ public class AircraftView
     */
     private void DisplayAircraftsPrompt()
     {
-        ConsoleUI.ClearConsole();
-        ConsoleUI.ShowHeader("Airport Management System");
+        ConsoleUi.ClearConsole();
+        ConsoleUi.ShowHeader("Airport Management System");
 
         try
         {
@@ -74,19 +74,19 @@ public class AircraftView
 
             if (airports.Count == 0)
             {
-                ConsoleUI.ConsoleNotification(
+                ConsoleUi.ConsoleNotification(
                     "No items available.",
                     ConsoleColor.DarkGray);
                 return;
             }
 
-            ConsoleUI.ShowListItem(
+            ConsoleUi.ShowListItem(
                 airports.Select(a => a.Display()).ToList(),
                 airports.First().AircraftColList(),
                 "Airports",
                 70
             );
-            ConsoleUI.ShowSearchedItemsCount(airports.Count, "Aircraft");
+            ConsoleUi.ShowSearchedItemsCount(airports.Count, "Aircraft");
         }
         catch (Exception e)
         {
