@@ -1,4 +1,5 @@
-﻿using AirportManagementSystem.Datasources;
+﻿using System.Collections;
+using AirportManagementSystem.Datasources;
 using AirportManagementSystem.Helpers;
 using AirportManagementSystem.Interfaces;
 using AirportManagementSystem.Models;
@@ -134,14 +135,16 @@ namespace AirportManagementSystem.Services
          */
         public List<Airport> Search(string query)
         {
-            foreach (var airport in _airports)
+            if (string.IsNullOrWhiteSpace(query))
             {
-                if (airport.Equals(_airports))
-                {
-                    return new List<Airport> { airport };
-                }
+                return _airports;
             }
-            return new List<Airport>();
+
+            var matchedAirports = _airports
+                .Where(a => a.Name.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return matchedAirports;
         }
 
 

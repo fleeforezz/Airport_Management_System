@@ -28,7 +28,9 @@ namespace AirportManagementSystem.Views.AirportView
                 ConsoleUI.ClearConsole();
                 ConsoleUI.ShowHeader("Airport Management System");
                 ConsoleUI.ShowMenu(options, "Options", 30);
+                
                 var choice = ConsoleUI.ReadUserChoice(1, options.Count);
+
                 switch (choice)
                 {
                     case 1:
@@ -90,7 +92,7 @@ namespace AirportManagementSystem.Views.AirportView
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"An error occured: {e.Message}");
             }
 
         }
@@ -113,7 +115,9 @@ namespace AirportManagementSystem.Views.AirportView
 
             if (_airportService.GetById(id) != null)
             {
-                Console.WriteLine("   Airport with the given id already exists.");
+                ConsoleUI.ConsoleNotification(
+                    "   Airport with the given id already exists.",
+                    ConsoleColor.DarkGray);
                 return;
             }
 
@@ -167,23 +171,24 @@ namespace AirportManagementSystem.Views.AirportView
                     ConsoleUI.ConsoleNotification(
                         "Airport with the given id does not exist.",
                         ConsoleColor.DarkRed);
+                    return;
                 }
 
                 ConsoleUI.ConsoleNotification(
                     $"Airport found: {existingAirport.Name}",
                     ConsoleColor.Green);
 
-                string name = Inputter.GetStringValue(
+                var name = Inputter.GetStringValue(
                     "   Enter name: ",
                     true, "");
                 if (name.Length == 0) name = existingAirport.Name;
 
-                string city = Inputter.GetStringValue(
+                var city = Inputter.GetStringValue(
                     "   Enter city: ",
                     true, "");
                 if (city.Length == 0) city = existingAirport.City;
 
-                string country = Inputter.GetStringValue(
+                var country = Inputter.GetStringValue(
                     "   Enter country: ",
                     true, "");
                 if (country.Length == 0) country = existingAirport.Country;
@@ -211,7 +216,7 @@ namespace AirportManagementSystem.Views.AirportView
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"An error occured: {e.Message}");
             }
 
         }
@@ -241,6 +246,7 @@ namespace AirportManagementSystem.Views.AirportView
                     ConsoleUI.ConsoleNotification(
                         "Airport with the given id does not exist.",
                         ConsoleColor.DarkRed);
+                    return;
                 }
 
                 ConsoleUI.ConsoleNotification(
@@ -258,7 +264,7 @@ namespace AirportManagementSystem.Views.AirportView
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"An error occured: {e.Message}");
             }
         }
 
@@ -269,7 +275,37 @@ namespace AirportManagementSystem.Views.AirportView
         */
         private void SearchAirportPrompt()
         {
-            
+            ConsoleUI.ClearConsole();
+            ConsoleUI.ShowHeader("Airport Management System");
+
+            var name = Inputter.GetStringValue(
+                "   Enter airport name: ",
+                true, "");
+
+            try
+            {
+                var airports = _airportService.Search(name);
+
+                if (airports.Count == 0)
+                {
+                    ConsoleUI.ConsoleNotification(
+                        "No items available.",
+                        ConsoleColor.DarkGray);
+                    return;
+                }
+
+                ConsoleUI.ShowListItem(
+                    airports.Select(a => a.Display()).ToList(),
+                    airports.First().AirportColList(),
+                    "Airports",
+                    70
+                );
+                ConsoleUI.ShowSearchedItemsCount(airports.Count, "Airport");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occured: {e.Message}");
+            }
         }
     }
 }

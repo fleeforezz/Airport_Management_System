@@ -101,7 +101,7 @@ namespace AirportManagementSystem.Helpers
         public static void ShowSearchedItemsCount(int count, string entityName)
         {
             Console.WriteLine();
-            Console.WriteLine($"   Search completed! Found {count} {entityName}s.");
+            ConsoleNotification($"   Search completed! Found {count} {entityName}s.", ConsoleColor.DarkGray);
             Console.WriteLine();
         }
 
