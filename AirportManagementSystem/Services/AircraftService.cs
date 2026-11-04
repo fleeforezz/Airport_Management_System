@@ -12,11 +12,11 @@ namespace AirportManagementSystem.Services
             "aircraft.json"
         );
 
-        private List<Aircraft> _aircrafts;
+        private List<Aircraft> _aircraftList;
 
         public AircraftService()
         {
-            _aircrafts = FileHandler.ReadMultiple<Aircraft>(_filePath);
+            _aircraftList = FileHandler.ReadMultiple<Aircraft>(_filePath);
         }
 
 
@@ -27,7 +27,7 @@ namespace AirportManagementSystem.Services
          */
         public List<Aircraft> GetAll()
         {
-            return _aircrafts;
+            return _aircraftList;
         }
 
 
@@ -38,7 +38,7 @@ namespace AirportManagementSystem.Services
          */
         public Aircraft? GetById(int id)
         {
-            var aircraft = _aircrafts.FirstOrDefault(a => a.Id == id);
+            var aircraft = _aircraftList.FirstOrDefault(a => a.Id == id);
             return aircraft;
         }
 
@@ -50,7 +50,7 @@ namespace AirportManagementSystem.Services
          */
         public Aircraft Add(Aircraft aircraft)
         {
-            _aircrafts.Add(aircraft);
+            _aircraftList.Add(aircraft);
             return aircraft;
         }
 
@@ -92,7 +92,7 @@ namespace AirportManagementSystem.Services
                 return false;
             }
 
-            _aircrafts.Remove(existingAircraft);
+            _aircraftList.Remove(existingAircraft);
             return true;
         }
 
@@ -106,10 +106,10 @@ namespace AirportManagementSystem.Services
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return _aircrafts;
+                return _aircraftList;
             }
 
-            var matchedAircrafts = _aircrafts
+            var matchedAircrafts = _aircraftList
                 .Where(a => a.Model.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
@@ -123,7 +123,7 @@ namespace AirportManagementSystem.Services
 
         public void Save()
         {
-            if (FileHandler.SaveSingle(_aircrafts, _filePath))
+            if (FileHandler.SaveSingle(_aircraftList, _filePath))
             {
                 Console.WriteLine("   Aircraft saved successfully.");
             }
