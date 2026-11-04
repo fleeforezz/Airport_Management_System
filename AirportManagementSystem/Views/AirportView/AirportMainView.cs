@@ -289,7 +289,7 @@ namespace AirportManagementSystem.Views.AirportView
                 if (airports.Count == 0)
                 {
                     ConsoleUi.ConsoleNotification(
-                        "No items available.",
+                        "No airport available.",
                         ConsoleColor.DarkGray);
                     return;
                 }

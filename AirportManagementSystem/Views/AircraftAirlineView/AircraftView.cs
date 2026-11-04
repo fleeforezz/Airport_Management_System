@@ -37,16 +37,16 @@ public class AircraftView
                     AddAircraftsPrompt();
                     break;
                 case 2:
-                    // UpdateAirportPrompt();
+                    UpdateAircraftPrompt();
                     break;
                 case 3:
-                    // DeleteAirportPrompt();
+                    DeleteAircraftPrompt();
                     break;
                 case 4:
                     DisplayAircraftsPrompt();
                     break;
                 case 5:
-                    // SearchAirportPrompt();
+                    SearchAircraftPrompt();
                     break;
                 case 6:
                     running = false;
@@ -164,10 +164,10 @@ public class AircraftView
             0, int.MaxValue,
             false);
 
-        if (_airlineService.GetById(id) == null)
+        if (_airlineService.GetById(airlineId) == null)
         {
             ConsoleUi.ConsoleNotification(
-                $"Airline with ID {id} not found.",
+                $"Airline with ID {airlineId} not found.",
                 ConsoleColor.Red);
             return;
         }
@@ -181,6 +181,179 @@ public class AircraftView
                 _aircraftService.Save();
                 Console.WriteLine("   Aircraft has been added !!!");
             }
+        }
+    }
+
+    /*
+    ###############################
+    Delete Aircraft Prompt
+    ###############################
+    */
+    private void DeleteAircraftPrompt()
+    {
+        ConsoleUi.ClearConsole();
+        ConsoleUi.ShowHeader("Aircraft Management System");
+
+        var idToDelete = Inputter.GetIntValue(
+            "   Enter ID: ",
+            1, int.MaxValue,
+            false);
+
+        try
+        {
+            var existingAircraft = _aircraftService.GetById(idToDelete);
+
+            if (existingAircraft == null)
+            {
+                ConsoleUi.ConsoleNotification(
+                    "Aircraft with the given id does not exist.",
+                    ConsoleColor.DarkRed);
+                return;
+            }
+
+            ConsoleUi.ConsoleNotification(
+                $"Aircraft found: {existingAircraft.Model}",
+                ConsoleColor.Green);
+
+            if (_aircraftService.Delete(idToDelete))
+            {
+                if (Inputter.ConfirmAction("   Do you want to delete an aircraft?"))
+                {
+                    _aircraftService.Save();
+                    Console.WriteLine("   Aircraft has been deleted !!!");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"An error occured: {e.Message}");
+        }
+    }
+
+
+    /*
+    ###############################
+    Update Aircraft Prompt
+    ###############################
+    */
+    private void UpdateAircraftPrompt()
+    {
+        ConsoleUi.ClearConsole();
+        ConsoleUi.ShowHeader("Airport Management System");
+
+        var idToUpdate = Inputter.GetIntValue(
+            "   Enter id: ",
+            1, int.MaxValue,
+            false);
+
+        try
+        {
+            var existingAircraft = _aircraftService.GetById(idToUpdate);
+
+            if (existingAircraft == null)
+            {
+                ConsoleUi.ConsoleNotification(
+                    "Aircraft with the given id does not exist.",
+                    ConsoleColor.DarkRed);
+                return;
+            }
+
+            ConsoleUi.ConsoleNotification(
+                $"Aircraft found: \n | {existingAircraft.RegistrationNumber} \n | {existingAircraft.Model}",
+                ConsoleColor.Green);
+
+            var registrationNumber = Inputter.GetStringValue(
+                "   Enter Registration Number: ",
+                true, "");
+            if (registrationNumber.Length == 0)  registrationNumber = existingAircraft.RegistrationNumber;
+
+            var model = Inputter.GetStringValue(
+                "   Enter model: ",
+                true, "");
+            if (model.Length == 0) model = existingAircraft.Model;
+
+            var capacity = Inputter.GetIntValue(
+                "   Enter capacity: ",
+                1, int.MaxValue,
+                true);
+            if (capacity == 0) capacity = existingAircraft.Capacity;
+
+            var airlineId = Inputter.GetIntValue(
+                "   Enter airline ID: ",
+                1, int.MaxValue,
+                true);
+            if (_airlineService.GetById(airlineId) == null) return;
+            if (airlineId == 0) airlineId = existingAircraft.AirlineId;
+
+            if (registrationNumber.Length == 0
+                || model.Length == 0
+                || capacity == 0
+                || airlineId == 0)
+            {
+                ConsoleUi.ConsoleNotification(
+                    "No changes",
+                    ConsoleColor.DarkGray);
+            }
+
+            var updatedAircraft = new Aircraft(
+                idToUpdate,
+                model,
+                registrationNumber,
+                capacity,
+                airlineId);
+
+            if (_aircraftService.Update(updatedAircraft) != null)
+            {
+                if (Inputter.ConfirmAction("   Do you want to update an aircraft?"))
+                {
+                    _aircraftService.Save();
+                    Console.WriteLine("   Airport has been updated !!!");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"An error occured: {e.Message}");
+        }
+    }
+
+    /*
+    ###############################
+    Search Aircraft Prompt
+    ###############################
+    */
+    private void SearchAircraftPrompt()
+    {
+        ConsoleUi.ClearConsole();
+        ConsoleUi.ShowHeader("Airport Management System");
+
+        var registrationNumber = Inputter.GetStringValue(
+            "   Enter Registration Number: ",
+            false, "   Registration Number cannot be empty");
+
+        try
+        {
+            var aircraftList = _aircraftService.Search(registrationNumber);
+
+            if (aircraftList.Count == 0)
+            {
+                ConsoleUi.ConsoleNotification(
+                    "No aircraft available.",
+                    ConsoleColor.DarkGray);
+                return;
+            }
+
+            ConsoleUi.ShowListItem(
+                aircraftList.Select(a => a.Display()).ToList(),
+                aircraftList.First().AircraftColList(),
+                "Aircraft",
+                70
+            );
+            ConsoleUi.ShowSearchedItemsCount(aircraftList.Count, "Aircraft");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"An error occured: {e.Message}");
         }
     }
 }

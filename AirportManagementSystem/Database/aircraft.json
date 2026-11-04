@@ -5,5 +5,12 @@
     "Model": "A320",
     "Capacity": 120,
     "AirlineId": 1
+  },
+  {
+    "Id": 2,
+    "RegistrationNumber": "NV9012398",
+    "Model": "A320",
+    "Capacity": 123,
+    "AirlineId": 1
   }
 ]

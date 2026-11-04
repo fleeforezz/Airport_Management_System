@@ -110,7 +110,7 @@ namespace AirportManagementSystem.Services
             }
 
             var matchedAircrafts = _aircraftList
-                .Where(a => a.Model.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+                .Where(a => a.RegistrationNumber.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return matchedAircrafts;
