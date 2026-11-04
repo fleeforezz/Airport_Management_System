@@ -12,11 +12,11 @@ namespace AirportManagementSystem.Models
         public string Name { get; set; }
         public string Country { get; set; }
 
-        public Airline(int id, string name, string city)
+        public Airline(int id, string name, string country)
         {
             Id = id;
             Name = name;
-            Country = city;
+            Country = country;
         }
 
         // Display Col

@@ -53,7 +53,7 @@ namespace AirportManagementSystem.Datasources
             {
                 throw new FileNotFoundException($"   File not found: {filePath}");
             }
-            string json = File.ReadAllText(filePath);
+            var json = File.ReadAllText(filePath);
             List<T> items = JsonSerializer.Deserialize<List<T>>(json);
             return items;
         }
