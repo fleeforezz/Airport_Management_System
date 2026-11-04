@@ -30,30 +30,80 @@ public class AirlineService : IRepository<Airline>
         return  _airlineList;
     }
 
+    /*
+    ###############################
+    Get Airline by ID Service
+    ###############################
+    */
     public Airline? GetById(int id)
     {
         var airline = _airlineList.FirstOrDefault(x => x.Id == id);
         return airline;
     }
 
-    public Airline Add(Airline item)
+    /*
+    ###############################
+    Add Airline Service
+    ###############################
+    */
+    public Airline Add(Airline airline)
     {
-        throw new NotImplementedException();
+        _airlineList.Add(airline);
+        return airline;
     }
 
-    public Airline Update(Airline item)
+
+    /*
+    ###############################
+    Update Airline Service
+    ###############################
+    */
+    public Airline Update(Airline airline)
     {
-        throw new NotImplementedException();
+        var existingAirline = GetById(airline.Id);
+
+        if (existingAirline == null)
+        {
+            return null;
+        }
+
+        existingAirline.Name = airline.Name;
+        existingAirline.Country = airline.Country;
+
+        return existingAirline;
     }
 
+
+    /*
+    ###############################
+    Delete Airline Service
+    ###############################
+    */
     public bool Delete(int id)
     {
-        throw new NotImplementedException();
+        var  existingAirline = GetById(id);
+
+        if (existingAirline == null)
+        {
+            return false;
+        }
+
+        _airlineList.Remove(existingAirline);
+        return true;
     }
 
     public List<Airline> Search(string query)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrEmpty(query))
+        {
+            return _airlineList;
+        }
+
+        var matchedAirline = _airlineList
+            .Where(x => x.Name.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        return  matchedAirline;
     }
 
     public void Display()
@@ -63,6 +113,13 @@ public class AirlineService : IRepository<Airline>
 
     public void Save()
     {
-        throw new NotImplementedException();
+        if (FileHandler.SaveSingle(_airlineList, _filePath))
+        {
+            Console.WriteLine("   Airline saved successfully.");
+        }
+        else
+        {
+            Console.WriteLine("   Failed to save airline.");
+        }
     }
 }
