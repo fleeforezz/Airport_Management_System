@@ -41,7 +41,14 @@ namespace AirportManagementSystem.Services
          */
         public bool Delete(int id)
         {
-            _airports.Remove(GetById(id));
+            var existingAirport = GetById(id);
+
+            if (existingAirport == null)
+            {
+                return false;
+            }
+
+            _airports.Remove(existingAirport);
             return true;
         }
 
@@ -147,7 +154,6 @@ namespace AirportManagementSystem.Services
 
             if (existingAirport == null)
             {
-                Console.WriteLine($"Airport with ID {item.Id} not found.");
                 return null;
             }
 

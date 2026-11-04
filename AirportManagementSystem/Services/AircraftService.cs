@@ -19,6 +19,12 @@ namespace AirportManagementSystem.Services
             _aircrafts = FileHandler.ReadMultiple<Aircraft>(_filePath);
         }
 
+
+        /*
+        ###############################
+        Get All Airports Service
+        ###############################
+         */
         public List<Aircraft> GetAll()
         {
             return _aircrafts;
@@ -56,22 +62,58 @@ namespace AirportManagementSystem.Services
          */
         public Aircraft Update(Aircraft aircraft)
         {
-            var existing = GetById(aircraft.Id);
+            var existingAircraft = GetById(aircraft.Id);
 
-            if (existing == null)
+            if (existingAircraft == null)
             {
-
+                return null;
             }
+
+            existingAircraft.RegistrationNumber =  aircraft.RegistrationNumber;
+            existingAircraft.Model = aircraft.Model;
+            existingAircraft.Capacity = aircraft.Capacity;
+            existingAircraft.AirlineId =  aircraft.AirlineId;
+
+            return existingAircraft;
         }
 
+
+        /*
+        ###############################
+        Delete Aircraft Service
+        ###############################
+         */
         public bool Delete(int id)
         {
-            throw new NotImplementedException();
+            var existingAircraft = GetById(id);
+
+            if (existingAircraft == null)
+            {
+                return false;
+            }
+
+            _aircrafts.Remove(existingAircraft);
+            return true;
         }
 
+
+        /*
+        ###############################
+        Search Aircraft Service
+        ###############################
+         */
         public List<Aircraft> Search(string query)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return _aircrafts;
+            }
+
+            var matchedAircrafts = _aircrafts
+                .Where(a => a.Model.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return matchedAircrafts;
         }
 
         public void Display()
@@ -81,7 +123,14 @@ namespace AirportManagementSystem.Services
 
         public void Save()
         {
-            throw new NotImplementedException();
+            if (FileHandler.SaveSingle(_aircrafts, _filePath))
+            {
+                Console.WriteLine("   Aircraft saved successfully.");
+            }
+            else
+            {
+                Console.WriteLine("   Failed to save aircraft.");
+            }
         }
     }
 }
