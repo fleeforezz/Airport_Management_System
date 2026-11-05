@@ -14,7 +14,12 @@ public class Flight
     public DateTime ArrivalTime { get; private set; }
     public FlightStatus Status { get; private set; }
 
-    public Flight(int id, string flightNumber, int originAirportId, int destinationAirportId, int airlineId, int aircraftId, DateTime departureTime, DateTime arrivalTime, FlightStatus status)
+    public Flight(
+        int id, string flightNumber,
+        int originAirportId, int destinationAirportId,
+        int airlineId, int aircraftId,
+        DateTime departureTime, DateTime arrivalTime,
+        FlightStatus status)
     {
         Id = id;
         FlightNumber = flightNumber;
