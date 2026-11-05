@@ -21,6 +21,14 @@ public class Flight
         DateTime departureTime, DateTime arrivalTime,
         FlightStatus status)
     {
+        if (originAirportId == destinationAirportId)
+            throw new ArgumentException(
+                "Origin and destination must be different.");
+
+        if (arrivalTime <= departureTime)
+            throw new ArgumentException(
+                "Arrival must be after departure.");
+
         Id = id;
         FlightNumber = flightNumber;
         OriginAirportId = originAirportId;
