@@ -10,13 +10,13 @@ namespace AirportManagementSystem.Models
     {
         public int Id { get; private set; }
         public string Name { get; set; }
-        public string City { get; set; }
+        public string Country { get; set; }
 
-        public Airline(int id, string name, string city)
+        public Airline(int id, string name, string country)
         {
             Id = id;
             Name = name;
-            City = city;
+            Country = country;
         }
 
         // Display Col
@@ -24,7 +24,7 @@ namespace AirportManagementSystem.Models
         {
             return new List<string>
             {
-                $"{"Id",-8}{"Name",-35}  {"City",-15}"
+                $"{"Id",-8}{"Name",-35}  {"Country",-15}"
             };
         }
 
@@ -35,7 +35,7 @@ namespace AirportManagementSystem.Models
                 "{0,-6}  {1,-35}  {2,-15} |",
                 this.Id,
                 this.Name,
-                this.City
+                this.Country
             );
         }
     }

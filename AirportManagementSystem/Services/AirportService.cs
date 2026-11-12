@@ -11,10 +11,10 @@ namespace AirportManagementSystem.Services
         private readonly string _filePath = Path.Combine(
             "..", "..", "..",
             "Database",
-            "airports.json"
+            "airport.json"
         );
 
-        private List<Airport> _airports;
+        private readonly List<Airport> _airports;
 
         public AirportService()
         {
@@ -28,15 +28,7 @@ namespace AirportManagementSystem.Services
          */
         public Airport Add(Airport airport)
         {
-
-            if (GetById(airport.Id) != null)
-            {
-                Console.WriteLine("Airport exists!!!");
-                return null;
-            }
-
             _airports.Add(airport);
-
             return airport;
 
         }
@@ -49,7 +41,14 @@ namespace AirportManagementSystem.Services
          */
         public bool Delete(int id)
         {
-            _airports.Remove(GetById(id));
+            var existingAirport = GetById(id);
+
+            if (existingAirport == null)
+            {
+                return false;
+            }
+
+            _airports.Remove(existingAirport);
             return true;
         }
 
@@ -102,10 +101,6 @@ namespace AirportManagementSystem.Services
         public Airport? GetById(int id)
         {
             var airport = _airports.FirstOrDefault(a => a.Id == id);
-            if (airport == null)
-            {
-                return null;
-            }
             return airport;
         }
 
@@ -159,7 +154,6 @@ namespace AirportManagementSystem.Services
 
             if (existingAirport == null)
             {
-                Console.WriteLine($"Airport with ID {item.Id} not found.");
                 return null;
             }
 
