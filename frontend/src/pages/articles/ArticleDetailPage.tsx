@@ -1,0 +1,100 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import PageShell from '../../components/layout/PageShell';
+import { MOCK_ARTICLES } from '../../utils/mockData';
+import { formatDate } from '../../utils/format';
+import { articleApi } from '../../services/api';
+import { Article } from '../../types';
+
+export const ArticleDetailPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+
+  const fallbackArticle =
+    MOCK_ARTICLES.find((a) => a.id === id || a.slug === id) || MOCK_ARTICLES[0];
+  const [article, setArticle] = useState<Article>(fallbackArticle);
+
+  useEffect(() => {
+    if (!id) return;
+    let isMounted = true;
+    articleApi.getBySlugOrId(id).then((res) => {
+      if (isMounted && res.success && res.data) {
+        setArticle(res.data);
+      }
+    }).catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  return (
+    <PageShell
+      title={article.title}
+      subtitle={`PUBLISHED: ${formatDate(article.publishedAt)} // ESTIMATED READING TIME: ${article.readTimeMinutes} MIN`}
+      badge={article.category}
+      breadcrumbs={[
+        { label: 'Home', path: '/' },
+        { label: 'Airport Directives', path: '/articles' },
+        { label: article.slug },
+      ]}
+    >
+      <article className="max-w-4xl mx-auto bg-white border border-[#E5E7EB] p-6 md:p-10 space-y-6">
+        {/* Cover Photo Frame */}
+        <div className="h-72 sm:h-96 w-full bg-[#EEEEEE] border border-black overflow-hidden relative">
+          <img
+            src={article.coverImage}
+            alt={article.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Author & Metadata Strip */}
+        <div className="flex flex-wrap items-center justify-between pb-4 border-b border-[#E5E7EB] font-mono text-xs text-[#4B5563] gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-[#DC2626]" />
+            <span>Author: <strong className="text-black">{article.author}</strong></span>
+            {article.authorRole && <span>({article.authorRole})</span>}
+          </div>
+          <div>DISPATCH UPDATE: {formatDate(article.publishedAt)}</div>
+        </div>
+
+        {/* Summary Lead Paragraph */}
+        <div className="p-4 bg-[#F5F5F5] border-l-4 border-black font-medium text-xs sm:text-sm text-black leading-relaxed">
+          {article.summary}
+        </div>
+
+        {/* Article Body Content */}
+        <div className="text-xs sm:text-sm text-black leading-relaxed space-y-4 whitespace-pre-line font-sans">
+          {article.content}
+        </div>
+
+        {/* Tags */}
+        <div className="pt-6 border-t border-[#E5E7EB] flex flex-wrap items-center gap-2">
+          <span className="font-mono text-[10px] text-[#4B5563] uppercase font-bold mr-2">
+            INDEX TAGS:
+          </span>
+          {article.tags.map((tag, i) => (
+            <span
+              key={i}
+              className="px-2 py-0.5 bg-[#F5F5F5] border border-[#E5E7EB] font-mono text-[10px] text-black uppercase"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Back link */}
+        <div className="pt-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white hover:bg-[#DC2626] font-mono text-xs font-bold uppercase tracking-wider transition-none"
+          >
+            <span>← RETURN TO FLIGHT PORTAL</span>
+          </Link>
+        </div>
+      </article>
+    </PageShell>
+  );
+};
+
+export default ArticleDetailPage;
