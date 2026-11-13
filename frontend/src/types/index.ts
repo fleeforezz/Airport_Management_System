@@ -4,7 +4,7 @@ export interface User {
   email: string;
   phone?: string;
   avatarUrl?: string;
-  role: 'USER' | 'ADMIN' | 'DISPATCHER' | 'MANAGER';
+  role: 'TRAVELER' | 'TOUR_OPERATOR' | 'ADMIN' | 'USER' | 'DISPATCHER' | 'MANAGER';
   zaloId?: string;
   createdAt: string;
 }
@@ -38,14 +38,15 @@ export interface Tour {
   code: string; // e.g., "VN-DAD-01"
   title: string;
   subtitle: string;
-  destinationId: string;
+  destinationId?: string;
+  destinationCode?: string;
   destinationName: string;
   price: number;
   originalPrice?: number;
   durationDays: number;
   durationNights: number;
   departureCity: string;
-  transportType: 'FLIGHT' | 'COMBO_AIR_HOTEL' | 'CHARTER';
+  transportType: 'FLIGHT' | 'COMBO_AIR_HOTEL' | 'CHARTER' | 'FLIGHT_EXCLUSIVE';
   airlineCode?: string;
   airlineName?: string;
   featuredImage: string;
@@ -56,6 +57,11 @@ export interface Tour {
   reviewsCount: number;
   isSaved?: boolean;
   status: 'ACTIVE' | 'DRAFT' | 'SOLD_OUT';
+  operatorId?: number;
+  baggagePolicy?: string;
+  cancellationPolicy?: string;
+  inclusions?: string[];
+  exclusions?: string[];
 }
 
 export interface Departure {
@@ -104,6 +110,11 @@ export interface Booking {
   totalPrice: number;
   discountAmount?: number;
   couponCode?: string;
+  baggagePackage?: string;
+  baggageFee?: number;
+  refundAmount?: number;
+  cancellationReason?: string;
+  cancellationDate?: string;
   paymentMethod: 'ZALO_PAY' | 'BANK_TRANSFER' | 'CREDIT_CARD' | 'AIRPORT_COUNTER';
   status: BookingStatus;
   notes?: string;
@@ -118,12 +129,23 @@ export interface BookingDraft {
   adultsCount: number;
   childrenCount: number;
   selectedSeats: string[];
+  baggagePackage?: string;
+  baggageFee?: number;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
   notes?: string;
   couponCode?: string;
   discount: number;
+}
+
+export interface Airline {
+  id: number;
+  code: string;
+  name: string;
+  country?: string;
+  logoUrl?: string;
+  isActive: boolean;
 }
 
 export interface Article {

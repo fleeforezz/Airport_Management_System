@@ -16,6 +16,9 @@ public interface ITourService
 {
     Task<ApiResponse<List<TourDto>>> GetAllToursAsync(string? search = null, string? destinationId = null);
     Task<ApiResponse<TourDto>> GetTourByIdAsync(int id);
+    Task<ApiResponse<TourDto>> CreateTourAsync(CreateTourDto dto, int? operatorId = null);
+    Task<ApiResponse<TourDto>> UpdateTourAsync(int id, CreateTourDto dto);
+    Task<ApiResponse<bool>> DeleteTourAsync(int id);
     Task<ApiResponse<bool>> ToggleSaveTourAsync(int tourId, int userId);
     Task<ApiResponse<List<TourDto>>> GetSavedToursAsync(int userId);
 }
@@ -32,8 +35,27 @@ public interface IBookingService
     Task<ApiResponse<List<BookingDto>>> GetAllBookingsAsync();
     Task<ApiResponse<List<BookingDto>>> GetUserBookingsAsync(int userId);
     Task<ApiResponse<BookingDto>> GetBookingByReferenceAsync(string reference);
-    Task<ApiResponse<bool>> CancelBookingAsync(int id);
+    Task<ApiResponse<bool>> CancelBookingAsync(int id, string? reason = null);
+    Task<ApiResponse<bool>> CancelBookingAsync(string referenceOrId, string? reason = null);
     Task<ApiResponse<bool>> UpdateBookingStatusAsync(int id, string status);
+}
+
+public interface IAirlineService
+{
+    Task<ApiResponse<List<AirlineDto>>> GetAllAirlinesAsync();
+    Task<ApiResponse<AirlineDto>> GetAirlineByIdAsync(int id);
+    Task<ApiResponse<AirlineDto>> CreateAirlineAsync(CreateAirlineDto dto);
+    Task<ApiResponse<AirlineDto>> UpdateAirlineAsync(int id, CreateAirlineDto dto);
+    Task<ApiResponse<bool>> DeleteAirlineAsync(int id);
+}
+
+public interface IUserService
+{
+    Task<ApiResponse<List<UserDto>>> GetAllUsersAsync();
+    Task<ApiResponse<bool>> UpdateUserRoleAsync(int id, string role);
+    Task<ApiResponse<bool>> DeleteUserAsync(int id);
+    Task<ApiResponse<UserDto>> UpdateProfileAsync(string idOrEmail, UpdateProfileDto dto);
+    Task<ApiResponse<UserDto>> UpdateAvatarAsync(string idOrEmail, string avatarUrl);
 }
 
 public interface ISeatService

@@ -3,31 +3,29 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
 import DeparturePicker from '../../components/booking/DeparturePicker';
 import GuestCounter from '../../components/booking/GuestCounter';
-import { MOCK_DEPARTURES, MOCK_TOURS } from '../../utils/mockData';
+import SwissSuspenseLoader from '../../components/common/SwissSuspenseLoader';
+import EmptyState from '../../components/common/EmptyState';
 import { useBookingDraft } from '../../context/BookingDraftContext';
 import { Departure, Tour } from '../../types';
 import { tourApi, flightApi } from '../../services/api';
 
 export const DepartureSelectPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const tourId = searchParams.get('tourId') || 'TOUR-DAD-01';
+  const tourId = searchParams.get('tourId') || '';
   const navigate = useNavigate();
   const { setTour, setDeparture, setGuests } = useBookingDraft();
 
-  const initialTour = MOCK_TOURS.find((t) => t.id === tourId || t.code === tourId) || MOCK_TOURS[0];
-  const [tour, setTourState] = useState<Tour>(initialTour);
-  const [departures, setDepartures] = useState<Departure[]>(
-    MOCK_DEPARTURES.filter((d) => d.tourId === initialTour.id)
-  );
-
-  const [selectedDep, setSelectedDep] = useState<Departure>(
-    departures[0] || MOCK_DEPARTURES[0]
-  );
+  const [tour, setTourState] = useState<Tour | null>(null);
+  const [departures, setDepartures] = useState<Departure[]>([]);
+  const [selectedDep, setSelectedDep] = useState<Departure | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [adults, setAdults] = useState(1);
   const [childrenCount, setChildrenCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
+    setIsLoading(true);
+
     const loadData = async () => {
       try {
         const [tourRes, flightRes] = await Promise.all([
@@ -35,16 +33,17 @@ export const DepartureSelectPage: React.FC = () => {
           flightApi.getAll(),
         ]);
 
-        if (isMounted && tourRes.success && tourRes.data) {
-          const found = tourRes.data.find(
+        let foundTour: Tour | null = null;
+        if (tourRes.success && tourRes.data) {
+          foundTour = tourRes.data.find(
             (t) => t.id === tourId || t.code === tourId || String(t.id) === String(tourId)
-          );
-          if (found) setTourState(found);
+          ) || tourRes.data[0] || null;
+          if (isMounted) setTourState(foundTour);
         }
 
         if (isMounted && flightRes.success && flightRes.data && flightRes.data.length > 0) {
           const matchedDeps = flightRes.data.filter(
-            (d) => d.tourId === tourId || d.tourId === initialTour.id || String(d.tourId) === String(tourId)
+            (d) => foundTour && (d.tourId === tourId || d.tourId === foundTour.id || String(d.tourId) === String(foundTour.id))
           );
           if (matchedDeps.length > 0) {
             setDepartures(matchedDeps);
@@ -55,9 +54,12 @@ export const DepartureSelectPage: React.FC = () => {
           }
         }
       } catch {
-        // Retain fallback data
+        // Handled cleanly
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
+
     loadData();
     return () => {
       isMounted = false;
@@ -65,11 +67,33 @@ export const DepartureSelectPage: React.FC = () => {
   }, [tourId]);
 
   const handleNext = () => {
+    if (!tour || !selectedDep) return;
     setTour(tour);
     setDeparture(selectedDep);
     setGuests(adults, childrenCount);
     navigate('/booking/checkout');
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="SELECT DEPARTURE" subtitle="SYNCING FLIGHT SCHEDULES...">
+        <SwissSuspenseLoader label="LOADING SCHEDULE // DATABASE MATRIX" />
+      </PageShell>
+    );
+  }
+
+  if (!tour) {
+    return (
+      <PageShell title="EXPEDITION NOT FOUND" subtitle="DATABASE QUERY RETURNED NO RESULTS">
+        <EmptyState
+          title="TOUR RECORD NOT FOUND"
+          description="Could not locate the flight schedule in the database matrix."
+          actionLabel="RETURN TO TOURS"
+          actionPath="/tours"
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -91,8 +115,20 @@ export const DepartureSelectPage: React.FC = () => {
 
         {/* Departure picker */}
         <DeparturePicker
-          departures={departures.length > 0 ? departures : MOCK_DEPARTURES}
-          selectedId={selectedDep.id}
+          departures={departures.length > 0 ? departures : [{
+            id: `dep-${tour.id}-auto`,
+            flightNumber: `${tour.code}-01`,
+            tourId: tour.id,
+            departureAirport: tour.departureCity?.substring(0, 3)?.toUpperCase() || 'SGN',
+            arrivalAirport: tour.destinationCode || 'DAD',
+            departureTime: new Date(Date.now() + 86400000 * 3).toISOString(),
+            arrivalTime: new Date(Date.now() + 86400000 * 3 + 7200000).toISOString(),
+            price: tour.price,
+            seatsAvailable: 30,
+            totalSeats: 180,
+            status: 'ON_TIME',
+          }]}
+          selectedId={selectedDep?.id}
           onSelect={(dep) => setSelectedDep(dep)}
         />
 

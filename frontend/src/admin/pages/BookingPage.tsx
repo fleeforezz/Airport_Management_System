@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_BOOKINGS } from '../../utils/mockData';
 import { Booking, BookingStatus } from '../../types';
 import Table, { Column } from '../components/Table';
 import Drawer from '../components/Drawer';
@@ -8,7 +7,7 @@ import { formatCurrency, formatDate, formatTime } from '../../utils/format';
 import { bookingApi } from '../../services/api';
 
 export const BookingPage: React.FC = () => {
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 

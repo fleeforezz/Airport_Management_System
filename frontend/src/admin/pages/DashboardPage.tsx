@@ -1,45 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_BOOKINGS, MOCK_DEPARTURES } from '../../utils/mockData';
 import { formatCurrency, formatDate, formatTime } from '../../utils/format';
 import Table, { Column } from '../components/Table';
 import StatusBadge from '../../components/booking/StatusBadge';
 import { Booking, Departure } from '../../types';
-import { adminApi } from '../../services/api';
+import { adminApi, bookingApi } from '../../services/api';
 
 export const DashboardPage: React.FC = () => {
-  const [bookings, setBookings] = useState<Booking[]>(MOCK_BOOKINGS);
-  const [departures, setDepartures] = useState<Departure[]>(MOCK_DEPARTURES);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [departures, setDepartures] = useState<Departure[]>([]);
   const [kpis, setKpis] = useState({
-    totalBookingsMonth: 2481,
-    dispatchedRevenue: 845000,
-    scheduledFlightSlots: 64,
-    activeFleetCount: 38,
+    totalBookingsMonth: 0,
+    dispatchedRevenue: 0,
+    scheduledFlightSlots: 0,
+    activeFleetCount: 0,
   });
 
   useEffect(() => {
     let mounted = true;
     const fetchDashboardData = async () => {
       try {
-        const statsRes = await adminApi.getStats();
-        if (mounted && statsRes.success && statsRes.data) {
-          const d = statsRes.data;
+        const [statsRes, depsRes, bookingsRes] = await Promise.allSettled([
+          adminApi.getStats(),
+          adminApi.getDepartures(),
+          bookingApi.getAll(),
+        ]);
+
+        if (mounted && statsRes.status === 'fulfilled' && statsRes.value.success && statsRes.value.data) {
+          const d = statsRes.value.data;
           setKpis({
-            totalBookingsMonth: d.totalBookingsMonth || 2481,
-            dispatchedRevenue: d.dispatchedRevenue || 845000,
-            scheduledFlightSlots: d.scheduledFlightSlots || 64,
-            activeFleetCount: d.activeFleetCount || 38,
+            totalBookingsMonth: d.totalBookingsMonth || 0,
+            dispatchedRevenue: d.dispatchedRevenue || 0,
+            scheduledFlightSlots: d.scheduledFlightSlots || 0,
+            activeFleetCount: d.activeFleetCount || 0,
           });
           if (d.recentBookings && d.recentBookings.length > 0) {
             setBookings(d.recentBookings);
           }
         }
 
-        const depsRes = await adminApi.getDepartures();
-        if (mounted && depsRes.success && depsRes.data && depsRes.data.length > 0) {
-          setDepartures(depsRes.data);
+        if (mounted && depsRes.status === 'fulfilled' && depsRes.value.success && depsRes.value.data) {
+          setDepartures(depsRes.value.data);
+        }
+
+        if (mounted && bookingsRes.status === 'fulfilled' && bookingsRes.value.success && bookingsRes.value.data) {
+          setBookings(bookingsRes.value.data.slice(0, 10));
         }
       } catch {
-        // Fall back to mock data when backend is not connected
+        // Handled cleanly
       }
     };
 

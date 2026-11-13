@@ -12,7 +12,7 @@ export const LoginPage: React.FC = () => {
 
   const [mode, setMode] = useState<AuthMode>('LOGIN');
   const [email, setEmail] = useState('admin@airport.gov');
-  const [password, setPassword] = useState('admin123');
+  const [password, setPassword] = useState('Admin@123456');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -22,6 +22,7 @@ export const LoginPage: React.FC = () => {
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regRole, setRegRole] = useState<'TRAVELER' | 'TOUR_OPERATOR'>('TRAVELER');
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -48,8 +49,18 @@ export const LoginPage: React.FC = () => {
       if (res.success) {
         setSuccessMessage(res.message || 'Authenticated successfully.');
         setTimeout(() => {
-          navigate(from, { replace: true });
-        }, 600);
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          const cleanEmail = (email || storedUser.email || '').toLowerCase().trim();
+          const role = (storedUser.role || '').toUpperCase();
+
+          if (cleanEmail.includes('operator') || role === 'TOUR_OPERATOR' || role === 'OPERATOR') {
+            window.location.href = '/admin.html?mode=operator';
+          } else if (cleanEmail.includes('admin') || role === 'ADMIN' || role === 'DISPATCHER') {
+            window.location.href = '/admin.html?mode=admin';
+          } else {
+            navigate(from === '/admin.html' ? '/' : from, { replace: true });
+          }
+        }, 400);
       } else {
         setErrorMessage(res.message || 'Authentication rejected: Invalid credentials.');
       }
@@ -78,13 +89,18 @@ export const LoginPage: React.FC = () => {
         email: regEmail,
         phone: regPhone,
         password: regPassword,
+        role: regRole,
       });
 
       if (res.success) {
-        setSuccessMessage(res.message || 'Account generated successfully!');
+        setSuccessMessage(res.message || 'Account registered successfully!');
         setTimeout(() => {
-          navigate(from, { replace: true });
-        }, 700);
+          if (regRole === 'TOUR_OPERATOR') {
+            window.location.href = '/admin.html?mode=operator';
+          } else {
+            navigate('/tours', { replace: true });
+          }
+        }, 500);
       } else {
         setErrorMessage(res.message || 'Registration failed.');
       }
@@ -145,13 +161,29 @@ export const LoginPage: React.FC = () => {
               >
                 VIEW PROFILE DOSSIER →
               </Link>
-              {(user.role === 'ADMIN' || user.role === 'DISPATCHER') && (
+              {user.role === 'ADMIN' && (
                 <a
-                  href="/admin.html"
-                  className="px-3.5 py-1.5 border border-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-none"
+                  href="/admin.html?mode=admin"
+                  className="px-3.5 py-1.5 bg-[#DC2626] text-white font-mono text-xs font-bold uppercase tracking-wider hover:bg-black transition-none"
                 >
-                  ACCESS DISPATCH PORTAL →
+                  ACCESS ADMIN PORTAL →
                 </a>
+              )}
+              {user.role === 'TOUR_OPERATOR' && (
+                <a
+                  href="/admin.html?mode=operator"
+                  className="px-3.5 py-1.5 bg-black text-white font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#DC2626] transition-none"
+                >
+                  ACCESS OPERATION PORTAL →
+                </a>
+              )}
+              {user.role === 'TRAVELER' && (
+                <Link
+                  to="/tours"
+                  className="px-3.5 py-1.5 bg-[#22C55E] text-white font-mono text-xs font-bold uppercase tracking-wider hover:bg-black transition-none"
+                >
+                  EXPLORE & BOOK TOURS →
+                </Link>
               )}
               <button
                 onClick={logout}
@@ -356,6 +388,57 @@ export const LoginPage: React.FC = () => {
               </div>
 
               <div>
+                <label className="block font-mono text-[10px] font-bold text-black uppercase tracking-wider mb-1.5">
+                  SYSTEM CLEARANCE ROLE *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label
+                    className={`p-3 border cursor-pointer block transition-none ${
+                      regRole === 'TRAVELER'
+                        ? 'border-2 border-black bg-[#F5F5F5]'
+                        : 'border-[#E5E7EB] bg-white hover:border-black'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="regRole"
+                        checked={regRole === 'TRAVELER'}
+                        onChange={() => setRegRole('TRAVELER')}
+                        className="accent-black"
+                      />
+                      <span className="font-bold text-black text-xs uppercase font-mono">TRAVELER</span>
+                    </div>
+                    <div className="text-[10px] text-[#4B5563] mt-1 ml-5">
+                      Khách du lịch (Đặt vé & thanh toán)
+                    </div>
+                  </label>
+
+                  <label
+                    className={`p-3 border cursor-pointer block transition-none ${
+                      regRole === 'TOUR_OPERATOR'
+                        ? 'border-2 border-black bg-[#F5F5F5]'
+                        : 'border-[#E5E7EB] bg-white hover:border-black'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="regRole"
+                        checked={regRole === 'TOUR_OPERATOR'}
+                        onChange={() => setRegRole('TOUR_OPERATOR')}
+                        className="accent-black"
+                      />
+                      <span className="font-bold text-black text-xs uppercase font-mono">OPERATOR</span>
+                    </div>
+                    <div className="text-[10px] text-[#4B5563] mt-1 ml-5">
+                      Đơn vị tour (Thêm sửa tour, hãng bay)
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div>
                 <label className="block font-mono text-[10px] font-bold text-black uppercase tracking-wider mb-1">
                   SECURITY PASSWORD (MIN 6 CHARACTERS)
                 </label>
@@ -396,47 +479,50 @@ export const LoginPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => handleSelectQuickCreds('admin@airport.gov', 'admin123')}
+                onClick={() => handleSelectQuickCreds('admin@airport.gov', 'Admin@123456')}
                 className="p-2.5 bg-[#F5F5F5] border border-[#E5E7EB] hover:border-black text-left transition-none font-mono"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-bold text-[#DC2626]">CHIEF DISPATCHER</span>
-                  <span className="text-[9px] text-[#4B5563]">[ADMIN]</span>
+                  <span className="text-[9px] font-bold text-[#DC2626]">ADMINISTRATOR</span>
+                  <span className="text-[9px] text-white bg-[#DC2626] px-1 font-bold">[ADMIN]</span>
                 </div>
                 <div className="text-[11px] font-bold text-black mt-0.5 truncate">
                   admin@airport.gov
                 </div>
-                <div className="text-[9px] text-[#4B5563]">Pass: admin123</div>
+                <div className="text-[9px] text-[#4B5563]">Pass: Admin@123456</div>
+                <div className="text-[8px] text-[#DC2626] mt-0.5 font-bold">→ Admin Portal</div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleSelectQuickCreds('alex@gmail.com', 'user123')}
+                onClick={() => handleSelectQuickCreds('operator@aeroops.global', 'Operator@123456')}
                 className="p-2.5 bg-[#F5F5F5] border border-[#E5E7EB] hover:border-black text-left transition-none font-mono"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-bold text-black">PASSENGER</span>
-                  <span className="text-[9px] text-[#4B5563]">[USER]</span>
+                  <span className="text-[9px] font-bold text-black">TOUR OPERATOR</span>
+                  <span className="text-[9px] text-white bg-black px-1 font-bold">[OPERATOR]</span>
+                </div>
+                <div className="text-[11px] font-bold text-black mt-0.5 truncate">
+                  operator@aeroops.global
+                </div>
+                <div className="text-[9px] text-[#4B5563]">Pass: Operator@123456</div>
+                <div className="text-[8px] text-black mt-0.5 font-bold">→ Operation Portal</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectQuickCreds('alex@gmail.com', 'Traveler@123456')}
+                className="p-2.5 bg-[#F5F5F5] border border-[#E5E7EB] hover:border-black text-left transition-none font-mono"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-bold text-[#22C55E]">TRAVELER</span>
+                  <span className="text-[9px] text-black bg-[#22C55E]/20 px-1 font-bold">[TRAVELER]</span>
                 </div>
                 <div className="text-[11px] font-bold text-black mt-0.5 truncate">
                   alex@gmail.com
                 </div>
-                <div className="text-[9px] text-[#4B5563]">Pass: user123</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectQuickCreds('dispatcher@aeroops.global', 'password')}
-                className="p-2.5 bg-[#F5F5F5] border border-[#E5E7EB] hover:border-black text-left transition-none font-mono"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-bold text-black">OPERATIONS LEAD</span>
-                  <span className="text-[9px] text-[#4B5563]">[DISPATCH]</span>
-                </div>
-                <div className="text-[11px] font-bold text-black mt-0.5 truncate">
-                  dispatcher@...
-                </div>
-                <div className="text-[9px] text-[#4B5563]">Pass: password</div>
+                <div className="text-[9px] text-[#4B5563]">Pass: Traveler@123456</div>
+                <div className="text-[8px] text-[#22C55E] mt-0.5 font-bold">→ Booking & Pay Only</div>
               </button>
             </div>
           </div>

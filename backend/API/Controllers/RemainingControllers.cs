@@ -108,4 +108,12 @@ public class AdminController : ControllerBase
         var result = await _flightService.GetAllFlightsAsync();
         return Ok(result);
     }
+
+    [HttpPost("seed")]
+    [HttpGet("seed")]
+    public async Task<IActionResult> SeedDatabase([FromServices] Infrastructure.Data.AirportDbContext context)
+    {
+        await Infrastructure.Data.DbInitializer.InitializeAsync(context);
+        return Ok(new { success = true, message = "Sample data seeded and synced into PostgreSQL database successfully." });
+    }
 }

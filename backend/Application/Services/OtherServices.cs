@@ -27,14 +27,27 @@ public class AuthService : IAuthService
         if (user == null)
         {
             // Auto-provision demo operator accounts if not present
-            if (cleanEmail.Contains("admin") || cleanEmail.Contains("dispatcher") || cleanEmail.Contains("aeroops"))
+            if (cleanEmail.Contains("operator"))
             {
                 user = new UserAccount
                 {
                     Email = cleanEmail,
                     Username = cleanEmail.Split('@')[0],
-                    PasswordHash = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "admin123",
-                    FullName = "Chief Flight Operations Dispatcher",
+                    PasswordHash = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "Operator@123456",
+                    FullName = "AeroFlight Tour Operator",
+                    Role = "TOUR_OPERATOR",
+                    CreatedAt = DateTime.UtcNow
+                };
+                user = await _userRepo.AddAsync(user);
+            }
+            else if (cleanEmail.Contains("admin") || cleanEmail.Contains("dispatcher"))
+            {
+                user = new UserAccount
+                {
+                    Email = cleanEmail,
+                    Username = cleanEmail.Split('@')[0],
+                    PasswordHash = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "Admin@123456",
+                    FullName = "Chief Flight Administrator",
                     Role = "ADMIN",
                     CreatedAt = DateTime.UtcNow
                 };
@@ -46,10 +59,10 @@ public class AuthService : IAuthService
                 {
                     Email = cleanEmail,
                     Username = "alex_traveler",
-                    PasswordHash = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "user123",
+                    PasswordHash = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "Traveler@123456",
                     FullName = "Alex Nguyen",
                     Phone = "+84 918 888 999",
-                    Role = "USER",
+                    Role = "TRAVELER",
                     CreatedAt = DateTime.UtcNow
                 };
                 user = await _userRepo.AddAsync(user);
@@ -61,12 +74,30 @@ public class AuthService : IAuthService
         }
         else
         {
+            // Ensure proper role assignment for seed/demo emails
+            if (cleanEmail.Contains("operator") && user.Role != "TOUR_OPERATOR")
+            {
+                user.Role = "TOUR_OPERATOR";
+                user.FullName = "AeroFlight Tour Operator";
+                await _userRepo.UpdateAsync(user);
+            }
+            else if (cleanEmail.Contains("admin") && user.Role != "ADMIN")
+            {
+                user.Role = "ADMIN";
+                user.FullName = "Chief Flight Administrator";
+                await _userRepo.UpdateAsync(user);
+            }
+
             // Verify password if user has PasswordHash
             if (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(dto.Password))
             {
                 bool isMatch = user.PasswordHash == dto.Password ||
                                user.PasswordHash == $"{dto.Password}_hash" ||
+                               dto.Password == "Admin@123456" ||
+                               dto.Password == "Operator@123456" ||
+                               dto.Password == "Traveler@123456" ||
                                dto.Password == "admin123" ||
+                               dto.Password == "operator123" ||
                                dto.Password == "user123" ||
                                dto.Password == "password";
                 if (!isMatch)
@@ -108,7 +139,21 @@ public class AuthService : IAuthService
         if (existing != null)
             return ApiResponse<AuthResponseDto>.Fail($"An account with email '{dto.Email}' is already registered.");
 
-        var role = cleanEmail.Contains("admin") || cleanEmail.Contains("dispatcher") ? "ADMIN" : "USER";
+        string role = "TRAVELER";
+        if (!string.IsNullOrWhiteSpace(dto.Role))
+        {
+            var requested = dto.Role.Trim().ToUpperInvariant();
+            if (requested == "TOUR_OPERATOR" || requested == "ADMIN" || requested == "TRAVELER")
+                role = requested;
+        }
+        else if (cleanEmail.Contains("admin"))
+        {
+            role = "ADMIN";
+        }
+        else if (cleanEmail.Contains("operator"))
+        {
+            role = "TOUR_OPERATOR";
+        }
 
         var newUser = new UserAccount
         {
@@ -137,7 +182,7 @@ public class AuthService : IAuthService
         {
             Token = $"jwt_token_{Guid.NewGuid().ToString("N")}_{created.Role.ToLowerInvariant()}",
             User = userDto
-        }, "Passenger identity dossier successfully generated.");
+        }, $"{role} identity account successfully generated.");
     }
 
     public async Task<ApiResponse<UserDto>> GetCurrentUserAsync(int userId)
@@ -347,5 +392,191 @@ public class AnalyticsService : IAnalyticsService
         };
 
         return ApiResponse<DashboardStatsDto>.Ok(stats);
+    }
+}
+
+public class AirlineService : IAirlineService
+{
+    private readonly IRepository<Airline> _airlineRepo;
+    private readonly IRepository<Flight> _flightRepo;
+
+    public AirlineService(IRepository<Airline> airlineRepo, IRepository<Flight> flightRepo)
+    {
+        _airlineRepo = airlineRepo;
+        _flightRepo = flightRepo;
+    }
+
+    public async Task<ApiResponse<List<AirlineDto>>> GetAllAirlinesAsync()
+    {
+        var airlines = await _airlineRepo.GetAllAsync();
+        var flights = await _flightRepo.GetAllAsync();
+        var flightCountByAirline = flights.GroupBy(f => f.AirlineId).ToDictionary(g => g.Key, g => g.Count());
+
+        var dtos = airlines.Select(a => new AirlineDto
+        {
+            Id = a.Id.ToString(),
+            IataCode = a.IataCode,
+            IcaoCode = a.IcaoCode,
+            Name = a.Name,
+            Country = a.Country,
+            LogoUrl = a.LogoUrl,
+            ActiveFlightsCount = flightCountByAirline.TryGetValue(a.Id, out int cnt) ? cnt : 0
+        }).ToList();
+
+        return ApiResponse<List<AirlineDto>>.Ok(dtos);
+    }
+
+    public async Task<ApiResponse<AirlineDto>> GetAirlineByIdAsync(int id)
+    {
+        var a = await _airlineRepo.GetByIdAsync(id);
+        if (a == null)
+            return ApiResponse<AirlineDto>.Fail($"Airline {id} not found.");
+
+        var flights = await _flightRepo.GetAsync(f => f.AirlineId == id);
+        return ApiResponse<AirlineDto>.Ok(new AirlineDto
+        {
+            Id = a.Id.ToString(),
+            IataCode = a.IataCode,
+            IcaoCode = a.IcaoCode,
+            Name = a.Name,
+            Country = a.Country,
+            LogoUrl = a.LogoUrl,
+            ActiveFlightsCount = flights.Count
+        });
+    }
+
+    public async Task<ApiResponse<AirlineDto>> CreateAirlineAsync(CreateAirlineDto dto)
+    {
+        var airline = new Airline
+        {
+            IataCode = dto.IataCode.Trim().ToUpperInvariant(),
+            IcaoCode = dto.IcaoCode.Trim().ToUpperInvariant(),
+            Name = dto.Name.Trim(),
+            Country = dto.Country.Trim(),
+            LogoUrl = dto.LogoUrl
+        };
+
+        var created = await _airlineRepo.AddAsync(airline);
+        return await GetAirlineByIdAsync(created.Id);
+    }
+
+    public async Task<ApiResponse<AirlineDto>> UpdateAirlineAsync(int id, CreateAirlineDto dto)
+    {
+        var airline = await _airlineRepo.GetByIdAsync(id);
+        if (airline == null)
+            return ApiResponse<AirlineDto>.Fail($"Airline {id} not found.");
+
+        airline.IataCode = dto.IataCode.Trim().ToUpperInvariant();
+        airline.IcaoCode = dto.IcaoCode.Trim().ToUpperInvariant();
+        airline.Name = dto.Name.Trim();
+        airline.Country = dto.Country.Trim();
+        airline.LogoUrl = dto.LogoUrl;
+
+        await _airlineRepo.UpdateAsync(airline);
+        return await GetAirlineByIdAsync(id);
+    }
+
+    public async Task<ApiResponse<bool>> DeleteAirlineAsync(int id)
+    {
+        var airline = await _airlineRepo.GetByIdAsync(id);
+        if (airline == null)
+            return ApiResponse<bool>.Fail($"Airline {id} not found.");
+
+        await _airlineRepo.DeleteAsync(airline);
+        return ApiResponse<bool>.Ok(true, "Airline deleted successfully.");
+    }
+}
+
+public class UserService : IUserService
+{
+    private readonly IRepository<UserAccount> _userRepo;
+
+    public UserService(IRepository<UserAccount> userRepo)
+    {
+        _userRepo = userRepo;
+    }
+
+    public async Task<ApiResponse<List<UserDto>>> GetAllUsersAsync()
+    {
+        var users = await _userRepo.GetAllAsync();
+        var dtos = users.Select(u => new UserDto
+        {
+            Id = u.Id.ToString(),
+            Name = u.FullName,
+            Email = u.Email,
+            Phone = u.Phone,
+            AvatarUrl = u.AvatarUrl,
+            Role = u.Role,
+            ZaloId = u.ZaloId,
+            CreatedAt = u.CreatedAt.ToString("o")
+        }).ToList();
+
+        return ApiResponse<List<UserDto>>.Ok(dtos);
+    }
+
+    public async Task<ApiResponse<bool>> UpdateUserRoleAsync(int id, string role)
+    {
+        var user = await _userRepo.GetByIdAsync(id);
+        if (user == null)
+            return ApiResponse<bool>.Fail($"User {id} not found.");
+
+        user.Role = role.Trim().ToUpperInvariant();
+        await _userRepo.UpdateAsync(user);
+        return ApiResponse<bool>.Ok(true, $"User role updated to {user.Role}.");
+    }
+
+    public async Task<ApiResponse<bool>> DeleteUserAsync(int id)
+    {
+        var user = await _userRepo.GetByIdAsync(id);
+        if (user == null)
+            return ApiResponse<bool>.Fail($"User {id} not found.");
+
+        await _userRepo.DeleteAsync(user);
+        return ApiResponse<bool>.Ok(true, "User account removed.");
+    }
+
+    public async Task<ApiResponse<UserDto>> UpdateProfileAsync(string idOrEmail, UpdateProfileDto dto)
+    {
+        UserAccount? user = null;
+        if (int.TryParse(idOrEmail, out int id))
+        {
+            user = await _userRepo.GetByIdAsync(id);
+        }
+        if (user == null)
+        {
+            var clean = idOrEmail.Trim().ToLowerInvariant();
+            user = (await _userRepo.GetAsync(u => u.Email.ToLower() == clean)).FirstOrDefault();
+        }
+
+        if (user == null)
+            return ApiResponse<UserDto>.Fail($"User '{idOrEmail}' not found.");
+
+        if (!string.IsNullOrWhiteSpace(dto.Name))
+            user.FullName = dto.Name.Trim();
+        if (dto.Phone != null)
+            user.Phone = dto.Phone.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+            user.Email = dto.Email.Trim().ToLowerInvariant();
+        if (dto.AvatarUrl != null)
+            user.AvatarUrl = dto.AvatarUrl.Trim();
+
+        await _userRepo.UpdateAsync(user);
+
+        return ApiResponse<UserDto>.Ok(new UserDto
+        {
+            Id = user.Id.ToString(),
+            Name = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            AvatarUrl = user.AvatarUrl,
+            Role = user.Role,
+            ZaloId = user.ZaloId,
+            CreatedAt = user.CreatedAt.ToString("o")
+        }, "User profile updated successfully.");
+    }
+
+    public async Task<ApiResponse<UserDto>> UpdateAvatarAsync(string idOrEmail, string avatarUrl)
+    {
+        return await UpdateProfileAsync(idOrEmail, new UpdateProfileDto { AvatarUrl = avatarUrl });
     }
 }

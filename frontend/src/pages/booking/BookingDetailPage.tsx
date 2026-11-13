@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
 import StatusBadge from '../../components/booking/StatusBadge';
-import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { useBookings } from '../../hooks/useBookings';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDate, formatTime, formatCurrency } from '../../utils/format';
 import { bookingApi } from '../../services/api';
 import { Booking } from '../../types';
 
+// Dynamic lazy import for interactive modal chunk (loaded on demand)
+const CancelReservationModal = lazy(() => import('../../components/booking/CancelReservationModal'));
+
 export const BookingDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { getBookingById, cancelBooking } = useBookings();
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const localBooking = getBookingById(id || '') || {
     id: id || 'BK-8849',
@@ -28,6 +32,8 @@ export const BookingDetailPage: React.FC = () => {
     adultsCount: 2,
     childrenCount: 0,
     totalPrice: 640,
+    baggagePackage: 'STANDARD',
+    baggageFee: 0,
     paymentMethod: 'CREDIT_CARD' as const,
     status: 'PAID' as const,
     passengers: [
@@ -54,10 +60,19 @@ export const BookingDetailPage: React.FC = () => {
     };
   }, [id]);
 
-  const handleConfirmCancel = () => {
-    cancelBooking(booking.id);
-    setBooking((prev) => ({ ...prev, status: 'CANCELLED' }));
-    setShowCancelDialog(false);
+  const handleConfirmCancel = async (bookingId: string, reason: string, refund: number) => {
+    try {
+      await bookingApi.cancel(bookingId, reason);
+    } catch {}
+    await cancelBooking(bookingId, reason, refund);
+    setBooking((prev) => ({ 
+      ...prev, 
+      status: 'CANCELLED',
+      refundAmount: refund,
+      cancellationReason: reason,
+      cancellationDate: new Date().toISOString()
+    }));
+    setShowCancelModal(false);
   };
 
   return (
@@ -96,10 +111,10 @@ export const BookingDetailPage: React.FC = () => {
             </button>
             {booking.status !== 'CANCELLED' && (
               <button
-                onClick={() => setShowCancelDialog(true)}
+                onClick={() => setShowCancelModal(true)}
                 className="px-3.5 py-1.5 border border-[#DC2626] text-[#DC2626] hover:bg-[#DC2626] hover:text-white font-mono text-xs font-bold uppercase tracking-wider transition-none"
               >
-                CANCEL RESERVATION
+                {t('bookings.cancelBtn')}
               </button>
             )}
           </div>
@@ -111,7 +126,7 @@ export const BookingDetailPage: React.FC = () => {
             FLIGHT SCHEDULE & ITINERARY SPECIFICATIONS
           </div>
           <div className="text-sm font-bold text-black">{booking.tourTitle}</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs text-[#4B5563] pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 font-mono text-xs text-[#4B5563] pt-2">
             <div>
               <span className="block text-[9px] uppercase">FLIGHT ROUTE</span>
               <span className="font-bold text-black">{booking.route}</span>
@@ -123,6 +138,12 @@ export const BookingDetailPage: React.FC = () => {
               </span>
             </div>
             <div>
+              <span className="block text-[9px] uppercase">BAGGAGE PACKAGE</span>
+              <span className="font-bold text-black">
+                {booking.baggagePackage || 'STANDARD'} {booking.baggageFee ? `(+$${booking.baggageFee})` : '(Included)'}
+              </span>
+            </div>
+            <div>
               <span className="block text-[9px] uppercase">TOTAL FARE</span>
               <span className="font-bold text-[#DC2626] text-sm">
                 {formatCurrency(booking.totalPrice)}
@@ -130,6 +151,27 @@ export const BookingDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Cancellation Notice if Cancelled */}
+        {booking.status === 'CANCELLED' && (
+          <div className="bg-white border-2 border-[#DC2626] p-5 font-mono space-y-2">
+            <div className="flex items-center gap-2 text-[#DC2626] font-bold text-xs uppercase">
+              <span className="w-2 h-2 bg-[#DC2626]" />
+              <span>RESERVATION CANCELLED & REFUND CREDITED</span>
+            </div>
+            <div className="text-xs text-black">
+              Refund Amount Issued: <strong className="text-[#22C55E]">${booking.refundAmount || 0}.00</strong>
+            </div>
+            {booking.cancellationReason && (
+              <div className="text-[11px] text-[#4B5563]">
+                Reason provided: <em>{booking.cancellationReason}</em>
+              </div>
+            )}
+            <div className="text-[10px] text-[#4B5563]">
+              Aviation seats released back to carrier inventory according to cancellation policy.
+            </div>
+          </div>
+        )}
 
         {/* Passenger List */}
         <div className="bg-white border border-[#E5E7EB] p-6 space-y-3">
@@ -170,15 +212,16 @@ export const BookingDetailPage: React.FC = () => {
         )}
       </div>
 
-      <ConfirmDialog
-        isOpen={showCancelDialog}
-        title="CONFIRM RESERVATION CANCELLATION"
-        message={`Are you certain you wish to cancel booking ${booking.bookingCode}? In accordance with airline dispatch regulations, refund credits will be credited within 24 business hours.`}
-        confirmText="CANCEL FLIGHT NOW"
-        isDestructive
-        onConfirm={handleConfirmCancel}
-        onCancel={() => setShowCancelDialog(false)}
-      />
+      {showCancelModal && (
+        <Suspense fallback={null}>
+          <CancelReservationModal
+            isOpen={showCancelModal}
+            booking={booking}
+            onClose={() => setShowCancelModal(false)}
+            onConfirmCancel={handleConfirmCancel}
+          />
+        </Suspense>
+      )}
     </PageShell>
   );
 };

@@ -8,6 +8,7 @@ interface BookingDraftContextType {
   setDeparture: (departure: Departure) => void;
   setGuests: (adults: number, children: number) => void;
   setSelectedSeats: (seats: string[]) => void;
+  setBaggagePackage: (pkg: string, fee: number) => void;
   setContactInfo: (contact: {
     name: string;
     email: string;
@@ -19,6 +20,7 @@ interface BookingDraftContextType {
   resetDraft: () => void;
   priceSummary: {
     subtotal: number;
+    baggageFee: number;
     discount: number;
     total: number;
   };
@@ -32,6 +34,8 @@ const INITIAL_DRAFT: BookingDraft = {
   adultsCount: 1,
   childrenCount: 0,
   selectedSeats: [],
+  baggagePackage: 'STANDARD',
+  baggageFee: 0,
   contactName: '',
   contactEmail: '',
   contactPhone: '',
@@ -93,6 +97,14 @@ export const BookingDraftProvider: React.FC<{ children: React.ReactNode }> = ({
     setDraft((prev) => ({
       ...prev,
       selectedSeats,
+    }));
+  };
+
+  const setBaggagePackage = (baggagePackage: string, baggageFee: number) => {
+    setDraft((prev) => ({
+      ...prev,
+      baggagePackage,
+      baggageFee,
     }));
   };
 
@@ -175,8 +187,9 @@ export const BookingDraftProvider: React.FC<{ children: React.ReactNode }> = ({
   const adultSubtotal = basePrice * draft.adultsCount;
   const childSubtotal = Math.round(basePrice * 0.75 * draft.childrenCount);
   const subtotal = adultSubtotal + childSubtotal;
-  const discount = Math.min(draft.discount || 0, subtotal);
-  const total = Math.max(0, subtotal - discount);
+  const baggageFee = draft.baggageFee || 0;
+  const discount = Math.min(draft.discount || 0, subtotal + baggageFee);
+  const total = Math.max(0, subtotal + baggageFee - discount);
 
   return (
     <BookingDraftContext.Provider
@@ -186,12 +199,14 @@ export const BookingDraftProvider: React.FC<{ children: React.ReactNode }> = ({
         setDeparture,
         setGuests,
         setSelectedSeats,
+        setBaggagePackage,
         setContactInfo,
         applyCoupon,
         removeCoupon,
         resetDraft,
         priceSummary: {
           subtotal,
+          baggageFee,
           discount,
           total,
         },

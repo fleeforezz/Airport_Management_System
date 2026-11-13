@@ -10,8 +10,14 @@ import { formatTime, formatDate } from '../../utils/format';
 export const BookingCheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { draft, setContactInfo, setSelectedSeats, applyCoupon, priceSummary } =
-    useBookingDraft();
+  const { 
+    draft, 
+    setContactInfo, 
+    setSelectedSeats, 
+    setBaggagePackage,
+    applyCoupon, 
+    priceSummary 
+  } = useBookingDraft();
   const { createBooking } = useBookings();
 
   // Form states initialized with auth user info if available
@@ -19,6 +25,18 @@ export const BookingCheckoutPage: React.FC = () => {
   const [contactEmail, setContactEmail] = useState(user?.email || draft.contactEmail || 'alex.morgan@aeroops.global');
   const [contactPhone, setContactPhone] = useState(user?.phone || draft.contactPhone || '+1 (555) 019-8821');
   const [notes, setNotes] = useState(draft.notes || '');
+
+  // Baggage packages state
+  const BAGGAGE_OPTIONS = [
+    { id: 'STANDARD', name: 'Standard Allowance', desc: '1× 7kg Cabin + 1× 20kg Checked Included', fee: 0 },
+    { id: 'PLUS_10KG', name: 'Extra +10kg Checked', desc: 'Total 30kg Checked Luggage allowance', fee: 25 },
+    { id: 'PLUS_20KG', name: 'Extra +20kg Checked', desc: 'Total 40kg Checked Luggage allowance', fee: 45 },
+    { id: 'PLUS_30KG', name: 'Extra +30kg Heavy Cargo', desc: 'Total 50kg Checked Luggage allowance', fee: 65 },
+    { id: 'SPORTS_EQUIPMENT', name: 'Sports Equipment', desc: 'Golf bag, surfboard, or winter ski gear', fee: 50 },
+  ];
+  const [selectedBaggage, setSelectedBaggage] = useState<string>(draft.baggagePackage || 'STANDARD');
+  const [agreedPolicy, setAgreedPolicy] = useState(false);
+  const [policyError, setPolicyError] = useState(false);
 
   // Coupon state
   const [couponInput, setCouponInput] = useState('');
@@ -34,6 +52,11 @@ export const BookingCheckoutPage: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'ZALO_PAY' | 'BANK_TRANSFER' | 'CREDIT_CARD' | 'AIRPORT_COUNTER'>('CREDIT_CARD');
 
   const totalPassengers = draft.adultsCount + draft.childrenCount;
+
+  const handleSelectBaggage = (id: string, fee: number) => {
+    setSelectedBaggage(id);
+    setBaggagePackage(id, fee);
+  };
 
   const toggleSeat = (seat: string) => {
     if (selectedSeatList.includes(seat)) {
@@ -54,6 +77,12 @@ export const BookingCheckoutPage: React.FC = () => {
 
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedPolicy) {
+      setPolicyError(true);
+      return;
+    }
+    setPolicyError(false);
+
     setContactInfo({
       name: contactName,
       email: contactEmail,
@@ -76,6 +105,8 @@ export const BookingCheckoutPage: React.FC = () => {
       customerZalo: contactPhone,
       adultsCount: draft.adultsCount,
       childrenCount: draft.childrenCount,
+      baggagePackage: selectedBaggage,
+      baggageFee: priceSummary.baggageFee || 0,
       totalPrice: priceSummary.total,
       discountAmount: priceSummary.discount,
       couponCode: draft.couponCode,
@@ -242,13 +273,124 @@ export const BookingCheckoutPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Baggage Selection Matrix */}
+          <div className="bg-white border border-[#E5E7EB] p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#DC2626]" />
+                <h2 className="font-black text-sm uppercase text-black">
+                  [ 03 ] BAGGAGE ALLOWANCE & EXTRA SURCHARGES
+                </h2>
+              </div>
+              <span className="font-mono text-[9px] text-[#4B5563]">1× 7KG + 1× 20KG INCLUDED BASE</span>
+            </div>
+
+            <p className="text-xs text-[#4B5563]">
+              Every ticket includes 7kg cabin baggage and 20kg standard checked luggage. Select additional baggage if required:
+            </p>
+
+            <div className="space-y-2.5">
+              {BAGGAGE_OPTIONS.map((pkg) => {
+                const isSelected = selectedBaggage === pkg.id;
+                return (
+                  <label
+                    key={pkg.id}
+                    onClick={() => handleSelectBaggage(pkg.id, pkg.fee)}
+                    className={`p-3.5 border cursor-pointer flex items-center justify-between transition-none ${
+                      isSelected
+                        ? 'border-2 border-black bg-[#F5F5F5]'
+                        : 'border-[#E5E7EB] bg-white hover:border-black'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="baggage"
+                        checked={isSelected}
+                        onChange={() => handleSelectBaggage(pkg.id, pkg.fee)}
+                        className="accent-black"
+                      />
+                      <div>
+                        <div className="font-bold text-xs text-black uppercase font-mono">
+                          {pkg.name}
+                        </div>
+                        <div className="text-[10px] text-[#4B5563]">
+                          {pkg.desc}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="font-mono text-xs font-bold text-black">
+                      {pkg.fee === 0 ? (
+                        <span className="text-[#22C55E]">INCLUDED</span>
+                      ) : (
+                        <span className="text-[#DC2626]">+${pkg.fee}.00</span>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cancellation Policy Acknowledgment */}
+          <div className="bg-white border border-[#E5E7EB] p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-black" />
+                <h2 className="font-black text-sm uppercase text-black">
+                  [ 04 ] TOUR CANCELLATION & REFUND POLICY
+                </h2>
+              </div>
+              <span className="font-mono text-[9px] text-[#DC2626] font-bold">MANDATORY AGREEMENT</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono text-[10px]">
+              <div className="p-2 bg-[#F5F5F5] border border-[#E5E7EB]">
+                <div className="text-[#4B5563]">≥ 15 Days Out</div>
+                <div className="font-bold text-[#22C55E] mt-0.5">100% REFUND</div>
+              </div>
+              <div className="p-2 bg-[#F5F5F5] border border-[#E5E7EB]">
+                <div className="text-[#4B5563]">7 – 14 Days Out</div>
+                <div className="font-bold text-black mt-0.5">70% REFUND</div>
+              </div>
+              <div className="p-2 bg-[#F5F5F5] border border-[#E5E7EB]">
+                <div className="text-[#4B5563]">3 – 6 Days Out</div>
+                <div className="font-bold text-[#DC2626] mt-0.5">40% REFUND</div>
+              </div>
+              <div className="p-2 bg-[#F5F5F5] border border-[#E5E7EB]">
+                <div className="text-[#4B5563]">&lt; 48 Hours Out</div>
+                <div className="font-bold text-black mt-0.5">0% REFUND</div>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-2.5 pt-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedPolicy}
+                onChange={(e) => {
+                  setAgreedPolicy(e.target.checked);
+                  if (e.target.checked) setPolicyError(false);
+                }}
+                className="mt-0.5 accent-black w-4 h-4"
+              />
+              <span className="text-xs text-black leading-relaxed">
+                I have reviewed and agree to the <strong>Tour Cancellation Schedule</strong> and acknowledge that aviation seats are released according to Civil Aviation regulations.
+              </span>
+            </label>
+            {policyError && (
+              <div className="font-mono text-[10px] text-[#DC2626] font-bold">
+                * You must accept the cancellation terms to proceed with booking.
+              </div>
+            )}
+          </div>
+
           {/* Payment Method Selector */}
           <div className="bg-white border border-[#E5E7EB] p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB]">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-[#DC2626]" />
                 <h2 className="font-black text-sm uppercase text-black">
-                  [ 03 ] PAYMENT SETTLEMENT PROTOCOL
+                  [ 05 ] PAYMENT SETTLEMENT PROTOCOL
                 </h2>
               </div>
               <span className="font-mono text-[9px] text-[#22C55E] font-bold">256-BIT SSL ENCRYPTED</span>
@@ -354,6 +496,8 @@ export const BookingCheckoutPage: React.FC = () => {
               basePrice={draft.departure?.price || draft.tour?.price || 320}
               adultsCount={draft.adultsCount}
               childrenCount={draft.childrenCount}
+              baggageFee={priceSummary.baggageFee}
+              baggagePackage={BAGGAGE_OPTIONS.find((b) => b.id === selectedBaggage)?.name}
               discount={priceSummary.discount}
               couponCode={draft.couponCode}
             />

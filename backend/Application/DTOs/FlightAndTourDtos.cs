@@ -53,6 +53,7 @@ public class ItineraryDayDto
 public class TourDto
 {
     public string Id { get; set; } = string.Empty;
+    public string? OperatorId { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string Subtitle { get; set; } = string.Empty;
@@ -63,15 +64,41 @@ public class TourDto
     public int DurationDays { get; set; }
     public int DurationNights { get; set; }
     public string DepartureCity { get; set; } = string.Empty;
-    public string TransportType { get; set; } = "FLIGHT";
+    public string TransportType { get; set; } = "FLIGHT_EXCLUSIVE";
     public string? AirlineCode { get; set; }
     public string? AirlineName { get; set; }
     public string FeaturedImage { get; set; } = string.Empty;
     public List<string> GalleryImages { get; set; } = new();
     public List<string> Highlights { get; set; } = new();
+    public List<string> Inclusions { get; set; } = new();
+    public List<string> Exclusions { get; set; } = new();
+    public string BaggagePolicy { get; set; } = string.Empty;
+    public string CancellationPolicy { get; set; } = string.Empty;
     public List<ItineraryDayDto> Itinerary { get; set; } = new();
     public double Rating { get; set; }
     public int ReviewsCount { get; set; }
     public bool? IsSaved { get; set; }
     public string Status { get; set; } = "ACTIVE";
+}
+
+public class CreateTourDto
+{
+    public string Code { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Subtitle { get; set; } = string.Empty;
+    public int DestinationId { get; set; }
+    public int? AirlineId { get; set; }
+    public decimal Price { get; set; }
+    public decimal? OriginalPrice { get; set; }
+    public int DurationDays { get; set; }
+    public int DurationNights { get; set; }
+    public string DepartureCity { get; set; } = "Ho Chi Minh City (SGN)";
+    public string FeaturedImage { get; set; } = string.Empty;
+    public List<string>? GalleryImages { get; set; }
+    public List<string>? Highlights { get; set; }
+    public List<string>? Inclusions { get; set; }
+    public List<string>? Exclusions { get; set; }
+    public string? BaggagePolicy { get; set; }
+    public string? CancellationPolicy { get; set; }
+    public List<ItineraryDayDto>? Itinerary { get; set; }
 }

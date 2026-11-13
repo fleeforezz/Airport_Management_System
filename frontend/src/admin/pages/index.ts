@@ -5,3 +5,5 @@ export * from './DeparturePage';
 export * from './DestinationPage';
 export * from './ArticlePage';
 export * from './CouponPage';
+export * from './AirlinesPage';
+export * from './UsersPage';

@@ -90,3 +90,144 @@ body {
     #F5F5F5 6px
   );
 }
+
+@keyframes swiss-indeterminate {
+  0% {
+    left: -40%;
+    width: 40%;
+  }
+  50% {
+    left: 20%;
+    width: 60%;
+  }
+  100% {
+    left: 100%;
+    width: 40%;
+  }
+}
+
+.swiss-loader-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: #000000;
+  animation: swiss-indeterminate 1.4s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+}
+
+/* =========================================================================
+   Swiss Modernism 2.0 High-Precision Motion & Animation System
+   ========================================================================= */
+
+@keyframes swiss-page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.swiss-page-enter {
+  animation: swiss-page-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes swiss-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.swiss-fade-in {
+  animation: swiss-fade-in 0.22s ease-out forwards;
+}
+
+@keyframes swiss-slide-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.swiss-slide-down {
+  animation: swiss-slide-down 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes swiss-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.swiss-scale-in {
+  animation: swiss-scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes swiss-beacon {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.18);
+  }
+}
+
+.swiss-beacon {
+  animation: swiss-beacon 2s ease-in-out infinite;
+}
+
+/* Micro-interaction Utilities */
+.swiss-transition {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.swiss-transition-colors {
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.swiss-card-hover {
+  transition: border-color 0.2s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.swiss-card-hover:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+}
+
+.swiss-img-scale {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .swiss-img-scale {
+  transform: scale(1.04);
+}
+
+.swiss-btn-glide {
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.swiss-btn-glide .glide-arrow {
+  display: inline-block;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.swiss-btn-glide:hover .glide-arrow {
+  transform: translateX(3px);
+}

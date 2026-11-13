@@ -45,6 +45,16 @@ public class BookingDto
     public decimal TotalPrice { get; set; }
     public decimal? DiscountAmount { get; set; }
     public string? CouponCode { get; set; }
+
+    // Baggage & Cancellation
+    public string BaggagePackage { get; set; } = "NONE";
+    public decimal BaggageFee { get; set; } = 0;
+    public decimal? RefundAmount { get; set; }
+    public string? CancellationReason { get; set; }
+    public string? CancellationDate { get; set; }
+    public string? BaggagePolicy { get; set; }
+    public string? CancellationPolicy { get; set; }
+
     public string PaymentMethod { get; set; } = "CREDIT_CARD";
     public string Status { get; set; } = "PENDING";
     public string? Notes { get; set; }
@@ -66,7 +76,34 @@ public class CreateBookingDto
     public string? Notes { get; set; }
     public string? CouponCode { get; set; }
     public decimal Discount { get; set; } = 0;
+    public string BaggagePackage { get; set; } = "NONE"; // NONE, EXTRA_10KG, EXTRA_20KG, EXTRA_30KG, SPORTS_EQUIPMENT
+    public decimal BaggageFee { get; set; } = 0;
     public string PaymentMethod { get; set; } = "CREDIT_CARD";
+}
+
+public class AirlineDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string IataCode { get; set; } = string.Empty;
+    public string IcaoCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    public string LogoUrl { get; set; } = string.Empty;
+    public int ActiveFlightsCount { get; set; }
+}
+
+public class CreateAirlineDto
+{
+    public string IataCode { get; set; } = string.Empty;
+    public string IcaoCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    public string LogoUrl { get; set; } = string.Empty;
+}
+
+public class CancelBookingRequestDto
+{
+    public string? Reason { get; set; }
 }
 
 public class SeatDto

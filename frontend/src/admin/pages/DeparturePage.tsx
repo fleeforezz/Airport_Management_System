@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_DEPARTURES } from '../../utils/mockData';
 import { Departure } from '../../types';
 import Table, { Column } from '../components/Table';
 import Drawer from '../components/Drawer';
@@ -8,7 +7,7 @@ import { formatDate, formatTime, formatCurrency } from '../../utils/format';
 import { flightApi } from '../../services/api';
 
 export const DeparturePage: React.FC = () => {
-  const [departures, setDepartures] = useState<Departure[]>(MOCK_DEPARTURES);
+  const [departures, setDepartures] = useState<Departure[]>([]);
   const [selectedDep, setSelectedDep] = useState<Departure | null>(null);
 
   useEffect(() => {

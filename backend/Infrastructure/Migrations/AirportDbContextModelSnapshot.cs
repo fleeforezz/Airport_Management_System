@@ -210,12 +210,26 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AdultsCount")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("BaggageFee")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("BaggagePackage")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("BookingReference")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BookingStatus")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CancellationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CancellationReason")
                         .HasColumnType("text");
 
                     b.Property<int>("ChildrenCount")
@@ -255,6 +269,10 @@ namespace Infrastructure.Migrations
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("RefundAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
 
                     b.Property<string>("Route")
                         .IsRequired()
@@ -654,6 +672,14 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("AirlineId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("BaggagePolicy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CancellationPolicy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("text");
@@ -671,6 +697,10 @@ namespace Infrastructure.Migrations
                     b.Property<int>("DurationNights")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ExclusionsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("FeaturedImage")
                         .IsRequired()
                         .HasColumnType("text");
@@ -682,6 +712,13 @@ namespace Infrastructure.Migrations
                     b.Property<string>("HighlightsJson")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("InclusionsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("OperatorId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("OriginalPrice")
                         .HasPrecision(12, 2)

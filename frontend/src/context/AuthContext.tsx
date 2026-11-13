@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-import { authApi } from '../services/api';
+import { authApi, userApi } from '../services/api';
 
 export interface AuthResult {
   success: boolean;
@@ -19,10 +19,11 @@ interface AuthContextType {
     password: string;
     fullName: string;
     phone?: string;
+    role?: string;
   }) => Promise<AuthResult>;
   loginWithZalo: () => Promise<AuthResult>;
   logout: () => void;
-  updateProfile: (updatedData: Partial<User>) => void;
+  updateProfile: (updatedData: Partial<User>) => Promise<void> | void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,18 +76,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Offline resilient fallback
       const clean = email.toLowerCase().trim();
-      const resolvedRole: User['role'] =
-        clean.includes('admin') || clean.includes('dispatch') ? 'ADMIN' : role;
+      let resolvedRole: User['role'] = role;
+      if (clean.includes('admin')) {
+        resolvedRole = 'ADMIN';
+      } else if (clean.includes('operator')) {
+        resolvedRole = 'TOUR_OPERATOR';
+      } else {
+        resolvedRole = 'TRAVELER';
+      }
 
       const fallbackUser: User = {
         id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
         name: clean.includes('admin')
-          ? 'Chief Flight Dispatcher'
+          ? 'System Administrator'
+          : clean.includes('operator')
+          ? 'AeroOps Expedition Operator'
           : clean.includes('alex')
-          ? 'Alex Nguyen'
+          ? 'Alex Morgan'
           : email.split('@')[0],
         email,
-        phone: '+84 909 123 456',
+        phone: '+1 (555) 019-8821',
         role: resolvedRole,
         avatarUrl: clean.includes('admin')
           ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
@@ -110,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string;
     fullName: string;
     phone?: string;
+    role?: string;
   }): Promise<AuthResult> => {
     setIsLoading(true);
     try {
@@ -127,7 +137,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (apiMsg) {
         return { success: false, message: apiMsg };
       }
-      return { success: false, message: 'Could not connect to authentication gateway.' };
+      // Offline fallback for registration
+      const fallbackUser: User = {
+        id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        role: (data.role as any) || 'TRAVELER',
+        createdAt: new Date().toISOString(),
+      };
+      setUser(fallbackUser);
+      setToken('offline-demo-jwt-token');
+      localStorage.setItem('user', JSON.stringify(fallbackUser));
+      localStorage.setItem('token', 'offline-demo-jwt-token');
+      return { success: true, message: 'Account registered successfully.' };
     } finally {
       setIsLoading(false);
     }
@@ -144,11 +167,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
   };
 
-  const updateProfile = (updatedData: Partial<User>) => {
+  const updateProfile = async (updatedData: Partial<User>) => {
     if (!user) return;
     const updated = { ...user, ...updatedData };
     setUser(updated);
     localStorage.setItem('user', JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('aeroflight_user_updated', { detail: updated }));
+
+    try {
+      if (updatedData.avatarUrl !== undefined) {
+        await userApi.updateAvatar(user.id || user.email, updatedData.avatarUrl);
+      }
+      await userApi.updateProfile(user.id || user.email, updatedData);
+    } catch {
+      // Offline/demo resilience - state already updated locally
+    }
   };
 
   return (

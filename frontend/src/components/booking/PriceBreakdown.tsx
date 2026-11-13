@@ -5,6 +5,8 @@ interface PriceBreakdownProps {
   basePrice: number;
   adultsCount: number;
   childrenCount: number;
+  baggageFee?: number;
+  baggagePackage?: string;
   discount?: number;
   couponCode?: string;
   currency?: 'USD' | 'VND';
@@ -14,6 +16,8 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
   basePrice,
   adultsCount,
   childrenCount,
+  baggageFee = 0,
+  baggagePackage,
   discount = 0,
   couponCode,
   currency = 'USD',
@@ -21,7 +25,7 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
   const adultSubtotal = basePrice * adultsCount;
   const childSubtotal = Math.round(basePrice * 0.75 * childrenCount);
   const subtotal = adultSubtotal + childSubtotal;
-  const total = Math.max(0, subtotal - discount);
+  const total = Math.max(0, subtotal + baggageFee - discount);
 
   return (
     <div className="bg-white border border-[#E5E7EB] p-4 select-none">
@@ -52,6 +56,14 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
           <span>Airport Security Surcharges & Terminal Fees</span>
           <span className="text-[#22C55E] font-bold">ALL-INCLUDED ($0.00)</span>
         </div>
+
+        {/* Baggage Surcharge row */}
+        {baggageFee > 0 && (
+          <div className="flex items-center justify-between text-black">
+            <span>Baggage Surcharge ({baggagePackage || 'Extra Luggage'})</span>
+            <span className="font-bold text-[#DC2626]">+{formatCurrency(baggageFee, currency)}</span>
+          </div>
+        )}
 
         {/* Discount row */}
         {discount > 0 && (

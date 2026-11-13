@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_ARTICLES } from '../../utils/mockData';
 import { Article } from '../../types';
 import Table, { Column } from '../components/Table';
 import Drawer from '../components/Drawer';
@@ -9,7 +8,7 @@ import { formatDate } from '../../utils/format';
 import { articleApi } from '../../services/api';
 
 export const ArticlePage: React.FC = () => {
-  const [articles, setArticles] = useState<Article[]>(MOCK_ARTICLES);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
   useEffect(() => {

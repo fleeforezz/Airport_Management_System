@@ -2,17 +2,46 @@ using Application.Interfaces;
 using Application.Services;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Configuration (PostgreSQL)
+// 1. High-Performance Database Configuration (PostgreSQL)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Host=localhost;Port=5432;Database=AirportManagementDb;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<AirportDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(2),
+            errorCodesToAdd: null);
+        npgsqlOptions.CommandTimeout(15);
+    });
+    // System Performance: Disable Change Tracking overhead by default for read-heavy workloads
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
+
+// 2. High-Performance Network Response Compression (Brotli & Gzip)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
 });
 
 // 2. Dependency Injection (Clean Architecture)
@@ -26,6 +55,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IAirlineService, AirlineService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // 3. Controllers & JSON Serialization (CamelCase for React compatibility)
 builder.Services.AddControllers()
@@ -77,6 +108,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 // 7. HTTP Pipeline Middleware
+app.UseResponseCompression();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

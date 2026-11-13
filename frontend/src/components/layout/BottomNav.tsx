@@ -1,14 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { getSavedTourIdsFromStorage } from '../../hooks/useTours';
+import { useBookings } from '../../hooks/useBookings';
 
 export const BottomNav: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  const { language } = useLanguage();
+  const { bookings } = useBookings();
+
+  const [savedCount, setSavedCount] = useState<number>(() => {
+    return isAuthenticated && user ? getSavedTourIdsFromStorage(user.email).length : 0;
+  });
+
+  useEffect(() => {
+    const handleSavedChange = () => {
+      if (isAuthenticated && user) {
+        setSavedCount(getSavedTourIdsFromStorage(user.email).length);
+      } else {
+        setSavedCount(0);
+      }
+    };
+
+    handleSavedChange();
+    window.addEventListener('aeroflight_saved_tours_updated', handleSavedChange);
+    window.addEventListener('storage', handleSavedChange);
+    return () => {
+      window.removeEventListener('aeroflight_saved_tours_updated', handleSavedChange);
+      window.removeEventListener('storage', handleSavedChange);
+    };
+  }, [isAuthenticated, user?.email]);
+
+  const bookingCount = isAuthenticated ? bookings.length : 0;
+  const isVi = language === 'vi';
+
   const tabs = [
-    { label: 'Home', path: '/', icon: 'home' },
-    { label: 'Explore', path: '/explore', icon: 'explore' },
-    { label: 'Flights', path: '/tours', icon: 'flight_takeoff' },
-    { label: 'Saved', path: '/tours/saved', icon: 'bookmark' },
-    { label: 'Bookings', path: '/booking/my', icon: 'confirmation_number' },
-    { label: 'Profile', path: '/account/profile', icon: 'person' },
+    { label: isVi ? 'Trang chủ' : 'Home', path: '/', icon: 'home' },
+    { label: isVi ? 'Điểm đến' : 'Explore', path: '/explore', icon: 'explore' },
+    { label: isVi ? 'Tour bay' : 'Tours', path: '/tours', icon: 'flight_takeoff' },
+    ...(isAuthenticated
+      ? [
+          { label: isVi ? 'Đã lưu' : 'Saved', path: '/tours/saved', icon: 'bookmark', count: savedCount },
+          { label: isVi ? 'Đơn đặt' : 'Bookings', path: '/booking/my', icon: 'confirmation_number', count: bookingCount },
+        ]
+      : []),
+    { label: isVi ? 'Hồ sơ' : 'Profile', path: '/account/profile', icon: 'person' },
   ];
 
   return (
@@ -26,9 +63,22 @@ export const BottomNav: React.FC = () => {
             }`
           }
         >
-          <span className="material-symbols-outlined text-[20px] mb-0.5">
-            {tab.icon}
-          </span>
+          <div className="relative mb-0.5">
+            <span className="material-symbols-outlined text-[20px] block">
+              {tab.icon}
+            </span>
+            {tab.count !== undefined && (
+              <span
+                className={`absolute -top-1 -right-2 px-1 py-0.2 font-mono text-[8px] font-bold leading-none border select-none ${
+                  tab.count > 0
+                    ? 'bg-[#DC2626] text-white border-[#DC2626]'
+                    : 'bg-[#E5E7EB] text-[#4B5563] border-[#D1D5DB]'
+                }`}
+              >
+                {tab.count}
+              </span>
+            )}
+          </div>
           <span className="font-mono text-[9px] tracking-tight uppercase">
             {tab.label}
           </span>

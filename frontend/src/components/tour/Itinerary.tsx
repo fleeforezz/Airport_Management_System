@@ -27,12 +27,12 @@ export const Itinerary: React.FC<ItineraryProps> = ({ days }) => {
         return (
           <div
             key={day.dayNumber}
-            className="bg-white border border-[#E5E7EB] hover:border-black transition-none"
+            className="bg-white border border-[#E5E7EB] hover:border-black swiss-transition"
           >
             {/* Header Clickable Row */}
             <button
               onClick={() => toggleDay(day.dayNumber)}
-              className="w-full p-4 flex items-center justify-between text-left cursor-pointer transition-none select-none"
+              className="w-full p-4 flex items-center justify-between text-left cursor-pointer swiss-transition-colors select-none"
             >
               <div className="flex items-center gap-3">
                 <span className="px-2 py-0.5 bg-black text-white font-mono text-[10px] font-bold uppercase tracking-wider">
@@ -42,14 +42,14 @@ export const Itinerary: React.FC<ItineraryProps> = ({ days }) => {
                   {day.title}
                 </span>
               </div>
-              <span className="font-mono text-sm font-bold text-[#4B5563]">
+              <span className="font-mono text-sm font-bold text-[#4B5563] transition-transform duration-150">
                 {isExpanded ? '—' : '+'}
               </span>
             </button>
 
             {/* Expanded Body Content */}
             {isExpanded && (
-              <div className="px-4 pb-4 pt-1 border-t border-[#E5E7EB] space-y-3">
+              <div className="px-4 pb-4 pt-1 border-t border-[#E5E7EB] space-y-3 swiss-slide-down">
                 <p className="text-xs text-[#4B5563] leading-relaxed">
                   {day.description}
                 </p>

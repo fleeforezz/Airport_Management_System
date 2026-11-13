@@ -40,7 +40,7 @@ public class UserAccount : BaseEntity
     public string PasswordHash { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string? Phone { get; set; }
-    public string Role { get; set; } = "USER"; // USER, DISPATCHER, AIRPORT_STAFF, ADMIN
+    public string Role { get; set; } = "TRAVELER"; // ADMIN, TOUR_OPERATOR, TRAVELER
     public string? ZaloId { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -74,6 +74,16 @@ public class Booking : BaseEntity
     public int ChildrenCount { get; set; } = 0;
     public decimal TotalPrice { get; set; }
     public decimal DiscountAmount { get; set; } = 0.00m;
+    
+    // Baggage surcharge & add-on options
+    public string BaggagePackage { get; set; } = "NONE"; // NONE, EXTRA_10KG, EXTRA_20KG, EXTRA_30KG, SPORTS_EQUIPMENT
+    public decimal BaggageFee { get; set; } = 0.00m;
+
+    // Cancellation policy execution
+    public decimal? RefundAmount { get; set; }
+    public string? CancellationReason { get; set; }
+    public DateTime? CancellationDate { get; set; }
+
     public string PaymentMethod { get; set; } = "CREDIT_CARD"; // CREDIT_CARD, BANK_TRANSFER, ZALO_PAY, AIRPORT_COUNTER
     public string BookingStatus { get; set; } = "CONFIRMED"; // PENDING, CONFIRMED, PAID, COMPLETED, CANCELLED
     public string? Notes { get; set; }

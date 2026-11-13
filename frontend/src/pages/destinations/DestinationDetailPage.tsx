@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
 import TourCard from '../../components/tour/TourCard';
-import { MOCK_DESTINATIONS, MOCK_TOURS } from '../../utils/mockData';
+import { Pagination } from '../../components/common/Pagination';
+import SwissSuspenseLoader from '../../components/common/SwissSuspenseLoader';
+import EmptyState from '../../components/common/EmptyState';
+import LazyImage from '../../components/common/LazyImage';
 import { useTours } from '../../hooks/useTours';
 import { destinationApi, tourApi } from '../../services/api';
 import { Destination, Tour } from '../../types';
@@ -10,37 +13,78 @@ import { Destination, Tour } from '../../types';
 export const DestinationDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { toggleSaveTour } = useTours();
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 16;
 
-  const fallbackDest =
-    MOCK_DESTINATIONS.find((d) => d.id === id || d.code === id) ||
-    MOCK_DESTINATIONS[0];
-  const [dest, setDest] = useState<Destination>(fallbackDest);
-  const [relatedTours, setRelatedTours] = useState<Tour[]>(
-    MOCK_TOURS.filter((t) => t.destinationId === fallbackDest.id)
-  );
+  const [dest, setDest] = useState<Destination | null>(null);
+  const [relatedTours, setRelatedTours] = useState<Tour[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    destinationApi.getAll().then((res) => {
-      if (isMounted && res.success && res.data) {
-        const found = res.data.find(
-          (d) => d.id === id || d.code === id || String(d.id) === String(id) || d.airportCode === id
-        );
-        if (found) {
-          setDest(found);
-          tourApi.getAll({ destinationId: found.id }).then((tRes) => {
-            if (isMounted && tRes.success && tRes.data && tRes.data.length > 0) {
-              setRelatedTours(tRes.data);
-            }
-          }).catch(() => {});
-        }
-      }
-    }).catch(() => {});
+    setIsLoading(true);
 
+    const loadDestinationData = async () => {
+      try {
+        let found: Destination | null = null;
+        try {
+          if (id) {
+            const direct = await destinationApi.getById(id);
+            if (direct.success && direct.data) found = direct.data;
+          }
+        } catch {
+          // Fall back to listing query
+        }
+
+        if (!found) {
+          const res = await destinationApi.getAll();
+          if (res.success && res.data) {
+            found = res.data.find(
+              (d) => d.id === id || d.code === id || String(d.id) === String(id) || d.airportCode === id
+            ) || null;
+          }
+        }
+
+        if (isMounted && found) {
+          setDest(found);
+          const tRes = await tourApi.getAll({ destinationId: found.id });
+          if (isMounted && tRes.success && tRes.data) {
+            setRelatedTours(tRes.data);
+          }
+        }
+      } catch {
+        // Handled cleanly
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadDestinationData();
     return () => {
       isMounted = false;
     };
   }, [id]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="DESTINATION HUB" subtitle="CONNECTING TO DATABASE...">
+        <SwissSuspenseLoader label="LOADING GATEWAY // DATABASE QUERY" />
+      </PageShell>
+    );
+  }
+
+  if (!dest) {
+    return (
+      <PageShell title="GATEWAY NOT FOUND" subtitle="DATABASE QUERY RETURNED NO RESULTS">
+        <EmptyState
+          title="DESTINATION NOT FOUND"
+          description="The requested airport gateway is not registered in the database."
+          actionLabel="RETURN TO EXPLORE"
+          actionPath="/explore"
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -56,12 +100,15 @@ export const DestinationDetailPage: React.FC = () => {
       {/* Destination Hero Banner */}
       <div className="bg-white border border-[#E5E7EB] mb-8 overflow-hidden">
         <div className="relative h-72 sm:h-96 w-full bg-black">
-          <img
+          <LazyImage
             src={dest.imageUrl}
             alt={dest.name}
             className="w-full h-full object-cover opacity-90"
+            containerClassName="w-full h-full"
+            priority={true}
+            fallbackSrc="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
           />
-          <div className="absolute bottom-6 left-6 right-6 bg-black/85 text-white p-5 border border-[#1F2937]">
+          <div className="absolute bottom-6 left-6 right-6 z-10 bg-black/85 text-white p-5 border border-[#1F2937]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="font-mono text-[10px] text-[#DC2626] font-bold uppercase tracking-wider">
@@ -126,15 +173,27 @@ export const DestinationDetailPage: React.FC = () => {
         </div>
 
         {relatedTours.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedTours.map((t, idx) => (
-              <TourCard
-                key={t.id}
-                tour={t}
-                index={idx}
-                onToggleSave={toggleSaveTour}
-              />
-            ))}
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              {relatedTours
+                .slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+                .map((t, idx) => (
+                  <TourCard
+                    key={t.id}
+                    tour={t}
+                    index={(currentPage - 1) * PAGE_SIZE + idx}
+                    onToggleSave={toggleSaveTour}
+                  />
+                ))}
+            </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(relatedTours.length / PAGE_SIZE)}
+              totalItems={relatedTours.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+            />
           </div>
         ) : (
           <div className="p-8 bg-white border border-[#E5E7EB] text-center font-mono text-xs text-[#4B5563]">

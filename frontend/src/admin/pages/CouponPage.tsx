@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_COUPONS } from '../../utils/mockData';
 import { Coupon } from '../../types';
 import Table, { Column } from '../components/Table';
 import Drawer from '../components/Drawer';
@@ -7,7 +6,7 @@ import { formatCurrency, formatDate } from '../../utils/format';
 import { couponApi } from '../../services/api';
 
 export const CouponPage: React.FC = () => {
-  const [coupons, setCoupons] = useState<Coupon[]>(MOCK_COUPONS);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [isNew, setIsNew] = useState(false);
 

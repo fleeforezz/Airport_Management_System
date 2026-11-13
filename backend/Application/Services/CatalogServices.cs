@@ -200,6 +200,93 @@ public class TourService : ITourService
         return ApiResponse<TourDto>.Ok(MapToDto(tour, destinations, airlines, dict));
     }
 
+    public async Task<ApiResponse<TourDto>> CreateTourAsync(CreateTourDto dto, int? operatorId = null)
+    {
+        var newTour = new Tour
+        {
+            Code = !string.IsNullOrWhiteSpace(dto.Code) ? dto.Code.Trim() : $"VN-TOUR-{Guid.NewGuid().ToString("N")[..4].ToUpper()}",
+            Title = dto.Title,
+            Subtitle = dto.Subtitle,
+            DestinationId = dto.DestinationId,
+            AirlineId = dto.AirlineId,
+            OperatorId = operatorId,
+            Price = dto.Price,
+            OriginalPrice = dto.OriginalPrice,
+            DurationDays = dto.DurationDays,
+            DurationNights = dto.DurationNights,
+            DepartureCity = dto.DepartureCity,
+            TransportType = "FLIGHT_EXCLUSIVE",
+            FeaturedImage = dto.FeaturedImage,
+            GalleryImagesJson = dto.GalleryImages != null ? JsonSerializer.Serialize(dto.GalleryImages) : "[]",
+            HighlightsJson = dto.Highlights != null ? JsonSerializer.Serialize(dto.Highlights) : "[]",
+            InclusionsJson = dto.Inclusions != null ? JsonSerializer.Serialize(dto.Inclusions) : "[]",
+            ExclusionsJson = dto.Exclusions != null ? JsonSerializer.Serialize(dto.Exclusions) : "[]",
+            BaggagePolicy = dto.BaggagePolicy ?? "Standard 7kg carry-on and 20kg checked baggage included free of charge with every flight ticket.",
+            CancellationPolicy = dto.CancellationPolicy ?? "Cancel 15+ days prior: 100% refund. 7-14 days prior: 70% refund. 3-6 days prior: 40% refund. Within 48 hours: Non-refundable.",
+            Status = "ACTIVE",
+            Rating = 5.0,
+            ReviewsCount = 0
+        };
+
+        var created = await _tourRepo.AddAsync(newTour);
+
+        if (dto.Itinerary != null && dto.Itinerary.Count > 0)
+        {
+            foreach (var day in dto.Itinerary)
+            {
+                await _itineraryRepo.AddAsync(new ItineraryDay
+                {
+                    TourId = created.Id,
+                    DayNumber = day.DayNumber,
+                    Title = day.Title,
+                    Description = day.Description,
+                    ActivitiesJson = day.Activities != null ? JsonSerializer.Serialize(day.Activities) : "[]",
+                    Meals = day.Meals,
+                    Stay = day.Stay
+                });
+            }
+        }
+
+        return await GetTourByIdAsync(created.Id);
+    }
+
+    public async Task<ApiResponse<TourDto>> UpdateTourAsync(int id, CreateTourDto dto)
+    {
+        var tour = await _tourRepo.GetByIdAsync(id);
+        if (tour == null)
+            return ApiResponse<TourDto>.Fail($"Tour with ID {id} not found.");
+
+        tour.Title = dto.Title;
+        tour.Subtitle = dto.Subtitle;
+        tour.DestinationId = dto.DestinationId;
+        tour.AirlineId = dto.AirlineId;
+        tour.Price = dto.Price;
+        tour.OriginalPrice = dto.OriginalPrice;
+        tour.DurationDays = dto.DurationDays;
+        tour.DurationNights = dto.DurationNights;
+        tour.DepartureCity = dto.DepartureCity;
+        if (!string.IsNullOrWhiteSpace(dto.FeaturedImage)) tour.FeaturedImage = dto.FeaturedImage;
+        if (dto.GalleryImages != null) tour.GalleryImagesJson = JsonSerializer.Serialize(dto.GalleryImages);
+        if (dto.Highlights != null) tour.HighlightsJson = JsonSerializer.Serialize(dto.Highlights);
+        if (dto.Inclusions != null) tour.InclusionsJson = JsonSerializer.Serialize(dto.Inclusions);
+        if (dto.Exclusions != null) tour.ExclusionsJson = JsonSerializer.Serialize(dto.Exclusions);
+        if (!string.IsNullOrWhiteSpace(dto.BaggagePolicy)) tour.BaggagePolicy = dto.BaggagePolicy;
+        if (!string.IsNullOrWhiteSpace(dto.CancellationPolicy)) tour.CancellationPolicy = dto.CancellationPolicy;
+
+        await _tourRepo.UpdateAsync(tour);
+        return await GetTourByIdAsync(id);
+    }
+
+    public async Task<ApiResponse<bool>> DeleteTourAsync(int id)
+    {
+        var tour = await _tourRepo.GetByIdAsync(id);
+        if (tour == null)
+            return ApiResponse<bool>.Fail($"Tour with ID {id} not found.");
+
+        await _tourRepo.DeleteAsync(tour);
+        return ApiResponse<bool>.Ok(true, "Tour deleted successfully.");
+    }
+
     public Task<ApiResponse<bool>> ToggleSaveTourAsync(int tourId, int userId)
     {
         return Task.FromResult(ApiResponse<bool>.Ok(true, "Tour saved status toggled."));
@@ -207,7 +294,6 @@ public class TourService : ITourService
 
     public async Task<ApiResponse<List<TourDto>>> GetSavedToursAsync(int userId)
     {
-        // Return active featured tours as saved for demo
         var all = await GetAllToursAsync();
         var saved = all.Data?.Take(2).Select(t => { t.IsSaved = true; return t; }).ToList() ?? new List<TourDto>();
         return ApiResponse<List<TourDto>>.Ok(saved);
@@ -223,8 +309,12 @@ public class TourService : ITourService
 
         List<string> gallery = new();
         List<string> highlights = new();
+        List<string> inclusions = new();
+        List<string> exclusions = new();
         try { gallery = JsonSerializer.Deserialize<List<string>>(t.GalleryImagesJson) ?? new(); } catch { }
         try { highlights = JsonSerializer.Deserialize<List<string>>(t.HighlightsJson) ?? new(); } catch { }
+        try { inclusions = JsonSerializer.Deserialize<List<string>>(t.InclusionsJson) ?? new(); } catch { }
+        try { exclusions = JsonSerializer.Deserialize<List<string>>(t.ExclusionsJson) ?? new(); } catch { }
 
         var dayDtos = (days ?? new List<ItineraryDay>()).Select(d =>
         {
@@ -244,6 +334,7 @@ public class TourService : ITourService
         return new TourDto
         {
             Id = t.Id.ToString(),
+            OperatorId = t.OperatorId?.ToString(),
             Code = t.Code,
             Title = t.Title,
             Subtitle = t.Subtitle,
@@ -260,6 +351,10 @@ public class TourService : ITourService
             FeaturedImage = t.FeaturedImage,
             GalleryImages = gallery,
             Highlights = highlights,
+            Inclusions = inclusions,
+            Exclusions = exclusions,
+            BaggagePolicy = t.BaggagePolicy,
+            CancellationPolicy = t.CancellationPolicy,
             Itinerary = dayDtos,
             Rating = t.Rating,
             ReviewsCount = t.ReviewsCount,

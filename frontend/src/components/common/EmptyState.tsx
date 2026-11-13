@@ -1,10 +1,13 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface EmptyStateProps {
   title?: string;
   description?: string;
   actionText?: string;
   onAction?: () => void;
+  actionLabel?: string;
+  actionPath?: string;
   iconName?: string;
 }
 
@@ -13,8 +16,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description = 'No matching aviation records found matching the active filtering parameters.',
   actionText,
   onAction,
+  actionLabel,
+  actionPath,
   iconName = 'inbox',
 }) => {
+  const label = actionLabel || actionText;
+
   return (
     <div className="flex flex-col items-center justify-center p-12 bg-white border border-[#E5E7EB] text-center my-6">
       <div className="w-12 h-12 bg-[#F5F5F5] border border-[#E5E7EB] flex items-center justify-center mb-4 text-[#4B5563]">
@@ -26,12 +33,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <p className="text-xs text-[#4B5563] max-w-md mb-6 leading-relaxed">
         {description}
       </p>
-      {actionText && onAction && (
+      {label && actionPath && (
+        <Link
+          to={actionPath}
+          className="px-4 py-2 bg-black text-white hover:bg-[#DC2626] font-mono text-[11px] font-bold uppercase tracking-wider transition-none border border-black flex items-center gap-2"
+        >
+          <span>{label}</span>
+          <span className="text-xs">→</span>
+        </Link>
+      )}
+      {label && onAction && !actionPath && (
         <button
           onClick={onAction}
           className="px-4 py-2 bg-black text-white hover:bg-[#DC2626] font-mono text-[11px] font-bold uppercase tracking-wider transition-none border border-black flex items-center gap-2"
         >
-          <span>{actionText}</span>
+          <span>{label}</span>
           <span className="text-xs">→</span>
         </button>
       )}

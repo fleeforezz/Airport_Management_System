@@ -1,6 +1,8 @@
 import React from 'react';
 import Header from './Header';
 import BottomNav from './BottomNav';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 
 interface PageShellProps {
   children: React.ReactNode;
@@ -19,6 +21,7 @@ export const PageShell: React.FC<PageShellProps> = ({
   breadcrumbs,
   actions,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F5F5] pb-16 lg:pb-0">
       <Header />
@@ -71,8 +74,8 @@ export const PageShell: React.FC<PageShellProps> = ({
         </div>
       )}
 
-      {/* Main Page Body */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-6">
+      {/* Main Page Body with Smooth Swiss Transition */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-6 swiss-page-enter">
         {children}
       </main>
 
@@ -99,43 +102,46 @@ export const PageShell: React.FC<PageShellProps> = ({
             {/* Links column 1 */}
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF] mb-3">
-                [ 01 ] FLIGHT OPERATIONS
+                {t('footer.flightOps')}
               </div>
               <ul className="space-y-2 text-xs">
-                <li><a href="/tours" className="hover:text-[#DC2626] transition-none">Flight Matrix & Air Tours</a></li>
-                <li><a href="/explore" className="hover:text-[#DC2626] transition-none">Airport Directory</a></li>
-                <li><a href="/articles" className="hover:text-[#DC2626] transition-none">Kiosk Check-in Directives</a></li>
+                <li><a href="/tours" className="hover:text-[#DC2626] transition-none">{t('footer.flightMatrix')}</a></li>
+                <li><a href="/explore" className="hover:text-[#DC2626] transition-none">{t('footer.airportDir')}</a></li>
+                <li><a href="/articles" className="hover:text-[#DC2626] transition-none">{t('footer.kioskDirectives')}</a></li>
               </ul>
             </div>
 
             {/* Links column 2 */}
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF] mb-3">
-                [ 02 ] PASSENGER SERVICES
+                {t('footer.passengerServices')}
               </div>
               <ul className="space-y-2 text-xs">
-                <li><a href="/booking/my" className="hover:text-[#DC2626] transition-none">Retrieve PNR Booking</a></li>
-                <li><a href="/auth/permissions" className="hover:text-[#DC2626] transition-none">SSO Privacy Disclosure</a></li>
-                <li><a href="/account/profile" className="hover:text-[#DC2626] transition-none">VIP Mileage Club</a></li>
+                <li><a href="/booking/my" className="hover:text-[#DC2626] transition-none">{t('footer.retrievePnr')}</a></li>
+                <li><a href="/auth/permissions" className="hover:text-[#DC2626] transition-none">{t('footer.privacyDisclosure')}</a></li>
+                <li><a href="/account/profile" className="hover:text-[#DC2626] transition-none">{t('footer.vipMileage')}</a></li>
               </ul>
             </div>
 
             {/* Links column 3 */}
             <div>
               <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF] mb-3">
-                [ 03 ] OPERATIONS DISPATCH
+                {t('footer.dispatchOps')}
               </div>
               <ul className="space-y-2 text-xs">
-                <li><a href="/admin.html" className="text-[#DC2626] font-bold hover:underline">Dispatcher Admin Portal →</a></li>
-                <li><span className="text-[#9CA3AF]">Release: v4.8.2 Swiss Core</span></li>
-                <li><span className="text-[#9CA3AF]">Station: T4-DISPATCH-ONLINE</span></li>
+                <li><a href="/auth/login" className="text-[#DC2626] font-bold hover:underline">{t('footer.officerPortal')}</a></li>
+                <li><span className="text-[#9CA3AF]">{t('footer.release')}</span></li>
+                <li><span className="text-[#9CA3AF]">{t('footer.station')}</span></li>
               </ul>
             </div>
           </div>
 
           <div className="pt-6 flex flex-col md:flex-row items-center justify-between font-mono text-[10px] text-[#9CA3AF] gap-3">
-            <div>© 2026 AEROFLIGHT SYSTEMS. ALL RIGHTS RESERVED. ZERO ROUNDED SILHOUETTES.</div>
-            <div>TELEMETRY LATENCY: 14MS // ISO 9001:2015 COMPLIANT</div>
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+              <span>{t('footer.rights')}</span>
+            </div>
+            <div>{t('footer.telemetry')}</div>
           </div>
         </div>
       </footer>

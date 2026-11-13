@@ -71,6 +71,8 @@ public class AirportDbContext : DbContext
             b.HasIndex(e => e.BookingReference).IsUnique();
             b.Property(e => e.TotalPrice).HasPrecision(12, 2);
             b.Property(e => e.DiscountAmount).HasPrecision(12, 2);
+            b.Property(e => e.BaggageFee).HasPrecision(12, 2);
+            b.Property(e => e.RefundAmount).HasPrecision(12, 2);
         });
 
         // 6. Anti-Double-Booking Constraint:

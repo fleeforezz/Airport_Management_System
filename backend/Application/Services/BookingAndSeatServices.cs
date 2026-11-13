@@ -85,8 +85,9 @@ public class BookingService : IBookingService
         // Calculate Pricing
         decimal unitPrice = flight.Price > 0 ? flight.Price : 299m;
         decimal rawTotal = unitPrice * dto.AdultsCount + (unitPrice * 0.75m * dto.ChildrenCount);
+        decimal baggageFee = dto.BaggageFee > 0 ? dto.BaggageFee : 0m;
         decimal discount = dto.Discount;
-        decimal totalPrice = Math.Max(0, rawTotal - discount);
+        decimal totalPrice = Math.Max(0, rawTotal + baggageFee - discount);
 
         // 5. Create Booking Entity
         var booking = new Booking
@@ -104,6 +105,8 @@ public class BookingService : IBookingService
             ChildrenCount = dto.ChildrenCount,
             TotalPrice = totalPrice,
             DiscountAmount = discount,
+            BaggagePackage = !string.IsNullOrWhiteSpace(dto.BaggagePackage) ? dto.BaggagePackage : "NONE",
+            BaggageFee = baggageFee,
             PaymentMethod = dto.PaymentMethod,
             BookingStatus = "CONFIRMED",
             Notes = dto.Notes,
@@ -244,23 +247,66 @@ public class BookingService : IBookingService
         return ApiResponse<BookingDto>.Ok(MapToDto(booking, flight, tourTitle, passengers.ToList()));
     }
 
-    public async Task<ApiResponse<bool>> CancelBookingAsync(int id)
+    public async Task<ApiResponse<bool>> CancelBookingAsync(int id, string? reason = null)
     {
-        var booking = await _bookingRepo.GetByIdAsync(id);
-        if (booking == null) return ApiResponse<bool>.Fail($"Booking {id} not found.");
+        return await CancelBookingAsync(id.ToString(), reason);
+    }
+
+    public async Task<ApiResponse<bool>> CancelBookingAsync(string referenceOrId, string? reason = null)
+    {
+        var cleanRef = referenceOrId.Trim();
+        bool isNumeric = int.TryParse(cleanRef, out int bId);
+        var bookings = await _bookingRepo.GetAsync(b => b.BookingReference.ToLower() == cleanRef.ToLower() || (isNumeric && b.Id == bId));
+        var booking = bookings.FirstOrDefault();
+        if (booking == null) return ApiResponse<bool>.Fail($"Booking reference {referenceOrId} not located in active registry.");
 
         booking.BookingStatus = "CANCELLED";
-        await _bookingRepo.UpdateAsync(booking);
+        booking.CancellationDate = DateTime.UtcNow;
+        booking.CancellationReason = reason ?? "Customer requested cancellation";
 
-        // Restore flight capacity
+        // Automated refund calculation based on days until flight departure
         var flight = await _flightRepo.GetByIdAsync(booking.FlightId);
+        decimal refundAmount = 0m;
         if (flight != null)
         {
+            var hoursUntilFlight = (flight.DepartureTime - DateTime.UtcNow).TotalHours;
+            var daysUntilFlight = hoursUntilFlight / 24.0;
+
+            if (daysUntilFlight >= 15)
+            {
+                // >= 15 days: 100% refund
+                refundAmount = booking.TotalPrice;
+            }
+            else if (daysUntilFlight >= 7)
+            {
+                // 7 to 14 days: 70% refund (30% penalty)
+                refundAmount = Math.Round(booking.TotalPrice * 0.70m, 2);
+            }
+            else if (daysUntilFlight >= 3)
+            {
+                // 3 to 6 days: 40% refund (60% penalty)
+                refundAmount = Math.Round(booking.TotalPrice * 0.40m, 2);
+            }
+            else
+            {
+                // Within 48 hours or past: 0% refund
+                refundAmount = 0m;
+            }
+
+            booking.RefundAmount = refundAmount;
+
+            // Restore flight capacity
             flight.SeatsAvailable += (booking.AdultsCount + booking.ChildrenCount);
             await _flightRepo.UpdateAsync(flight);
         }
 
-        return ApiResponse<bool>.Ok(true, "Booking cancelled and inventory returned.");
+        await _bookingRepo.UpdateAsync(booking);
+
+        string message = refundAmount > 0
+            ? $"Tour booking cancelled according to policy. Estimated refund: ${refundAmount:F2}."
+            : "Tour booking cancelled within 48h departure window. Non-refundable per aviation tour policy.";
+
+        return ApiResponse<bool>.Ok(true, message);
     }
 
     public async Task<ApiResponse<bool>> UpdateBookingStatusAsync(int id, string status)
@@ -293,6 +339,11 @@ public class BookingService : IBookingService
             ChildrenCount = b.ChildrenCount,
             TotalPrice = b.TotalPrice,
             DiscountAmount = b.DiscountAmount,
+            BaggagePackage = b.BaggagePackage,
+            BaggageFee = b.BaggageFee,
+            RefundAmount = b.RefundAmount,
+            CancellationReason = b.CancellationReason,
+            CancellationDate = b.CancellationDate?.ToString("o"),
             CouponCode = b.Coupon?.Code,
             PaymentMethod = b.PaymentMethod,
             Status = b.BookingStatus,

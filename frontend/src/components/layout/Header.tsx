@@ -1,11 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSwitcher from '../common/LanguageSwitcher';
+import { getSavedTourIdsFromStorage } from '../../hooks/useTours';
+import { useBookings } from '../../hooks/useBookings';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useLanguage();
+  const { bookings } = useBookings();
   const [currentTime, setCurrentTime] = useState<string>('');
+
+  const [savedCount, setSavedCount] = useState<number>(() => {
+    return isAuthenticated && user ? getSavedTourIdsFromStorage(user.email).length : 0;
+  });
+
+  // Keep saved tours count in sync across sessions and events
+  useEffect(() => {
+    const handleSavedChange = () => {
+      if (isAuthenticated && user) {
+        setSavedCount(getSavedTourIdsFromStorage(user.email).length);
+      } else {
+        setSavedCount(0);
+      }
+    };
+
+    handleSavedChange();
+    window.addEventListener('aeroflight_saved_tours_updated', handleSavedChange);
+    window.addEventListener('storage', handleSavedChange);
+    return () => {
+      window.removeEventListener('aeroflight_saved_tours_updated', handleSavedChange);
+      window.removeEventListener('storage', handleSavedChange);
+    };
+  }, [isAuthenticated, user?.email]);
+
+  const bookingCount = isAuthenticated ? bookings.length : 0;
 
   useEffect(() => {
     const updateTime = () => {
@@ -19,11 +50,15 @@ export const Header: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { label: 'HOME', path: '/' },
-    { label: 'EXPLORE DESTINATIONS', path: '/explore' },
-    { label: 'FLIGHTS & TOURS', path: '/tours' },
-    { label: 'SAVED FLIGHTS', path: '/tours/saved' },
-    { label: 'MY BOOKINGS', path: '/booking/my' },
+    { label: t('nav.home'), path: '/' },
+    { label: t('nav.explore'), path: '/explore' },
+    { label: t('nav.tours'), path: '/tours' },
+    ...(isAuthenticated
+      ? [
+          { label: t('nav.savedTours'), path: '/tours/saved', count: savedCount },
+          { label: t('nav.myBookings'), path: '/booking/my', count: bookingCount },
+        ]
+      : []),
   ];
 
   return (
@@ -32,25 +67,48 @@ export const Header: React.FC = () => {
       <div className="hidden md:flex items-center justify-between px-6 py-1 bg-[#F5F5F5] border-b border-[#E5E7EB] font-mono text-[9px] text-[#4B5563]">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 font-bold text-black">
-            <span className="w-1.5 h-1.5 bg-[#22C55E]" />
-            AERO-NET: 100% OPERATIONAL
+            <span className="w-1.5 h-1.5 bg-[#22C55E] swiss-beacon" />
+            {t('nav.operational')}
           </span>
           <span className="text-[#E5E7EB]">|</span>
-          <span>STATION: KJFK / SGN GATEWAY</span>
+          <span>{t('nav.station')}</span>
           <span className="text-[#E5E7EB]">|</span>
-          <span>DISPATCH MATRIX V2.0</span>
+          <span>{t('nav.dispatchMatrix')}</span>
         </div>
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           <div className="flex items-center gap-1.5 font-bold text-black">
-            <span className="w-1.5 h-1.5 bg-[#DC2626]" />
+            <span className="w-1.5 h-1.5 bg-[#DC2626] swiss-beacon" />
             <span>UTC {currentTime}</span>
           </div>
-          <a
-            href="/admin.html"
-            className="text-black hover:text-[#DC2626] font-bold underline transition-none"
-          >
-            ENTER ADMIN PORTAL →
-          </a>
+          {isAuthenticated && user ? (
+            user.role === 'ADMIN' ? (
+              <a
+                href="/admin.html?mode=admin"
+                className="text-[#DC2626] hover:text-black font-bold underline transition-none"
+              >
+                {t('nav.adminPortal')}
+              </a>
+            ) : user.role === 'TOUR_OPERATOR' ? (
+              <a
+                href="/admin.html?mode=operator"
+                className="text-black hover:text-[#DC2626] font-bold underline transition-none"
+              >
+                {t('nav.operationPortal')}
+              </a>
+            ) : (
+              <span className="text-[#22C55E] font-bold">
+                {t('nav.travelerVerified')}
+              </span>
+            )
+          ) : (
+            <Link
+              to="/auth/login"
+              className="text-black hover:text-[#DC2626] font-bold underline transition-none"
+            >
+              {t('nav.signIn')} →
+            </Link>
+          )}
         </div>
       </div>
 
@@ -67,7 +125,7 @@ export const Header: React.FC = () => {
               <span className="w-1.5 h-1.5 bg-[#DC2626] inline-block" />
             </div>
             <div className="font-mono text-[9px] text-[#4B5563] tracking-widest uppercase mt-0.5">
-              AIRPORT & FLIGHT OPERATIONS
+              FLIGHT-EXCLUSIVE EXPEDITIONS & TOURS
             </div>
           </div>
         </Link>
@@ -80,20 +138,36 @@ export const Header: React.FC = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-3 py-1.5 font-mono text-[11px] font-bold tracking-wider uppercase transition-none border ${
+                className={`px-3 py-1.5 font-mono text-[11px] font-bold tracking-wider uppercase swiss-transition-colors border flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-black text-white border-black'
                     : 'text-[#4B5563] hover:text-black hover:bg-[#F5F5F5] border-transparent'
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.count !== undefined && (
+                  <span
+                    className={`px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none select-none border swiss-transition ${
+                      link.count > 0
+                        ? isActive
+                          ? 'bg-[#DC2626] text-white border-[#DC2626]'
+                          : 'bg-[#DC2626] text-white border-[#DC2626]'
+                        : isActive
+                        ? 'bg-[#262626] text-[#9CA3AF] border-[#404040]'
+                        : 'bg-[#F5F5F5] text-[#6B7280] border-[#E5E7EB]'
+                    }`}
+                  >
+                    {link.count}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
 
-        {/* User Account Ribbon */}
+        {/* User Account Ribbon & Language Switcher */}
         <div className="flex items-center gap-3">
+          <LanguageSwitcher className="md:hidden" />
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
               <Link
@@ -122,7 +196,7 @@ export const Header: React.FC = () => {
               </Link>
               <button
                 onClick={logout}
-                title="Sign Out"
+                title={t('nav.signOut')}
                 className="w-8 h-8 border border-[#E5E7EB] flex items-center justify-center text-[#4B5563] hover:text-black hover:border-black hover:bg-[#F5F5F5] transition-none"
               >
                 <span className="material-symbols-outlined text-[16px]">logout</span>
@@ -135,7 +209,7 @@ export const Header: React.FC = () => {
                 className="px-3.5 py-1.5 bg-black text-white hover:bg-[#DC2626] font-mono text-[11px] font-bold uppercase tracking-wider transition-none border border-black flex items-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[14px]">lock</span>
-                <span>SIGN IN / ACCESS</span>
+                <span>{t('nav.signIn')}</span>
               </Link>
             </div>
           )}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_DESTINATIONS } from '../../utils/mockData';
 import { Destination } from '../../types';
 import Table, { Column } from '../components/Table';
 import Drawer from '../components/Drawer';
@@ -7,7 +6,7 @@ import ImageUploader from '../components/ImageUploader';
 import { destinationApi } from '../../services/api';
 
 export const DestinationPage: React.FC = () => {
-  const [destinations, setDestinations] = useState<Destination[]>(MOCK_DESTINATIONS);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [editingDest, setEditingDest] = useState<Destination | null>(null);
 
   useEffect(() => {

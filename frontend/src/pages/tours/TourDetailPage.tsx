@@ -6,7 +6,8 @@ import Itinerary from '../../components/tour/Itinerary';
 import DeparturePicker from '../../components/booking/DeparturePicker';
 import GuestCounter from '../../components/booking/GuestCounter';
 import PriceBreakdown from '../../components/booking/PriceBreakdown';
-import { MOCK_TOURS, MOCK_DEPARTURES } from '../../utils/mockData';
+import SwissSuspenseLoader from '../../components/common/SwissSuspenseLoader';
+import EmptyState from '../../components/common/EmptyState';
 import { useBookingDraft } from '../../context/BookingDraftContext';
 import { formatCurrency, formatDurationDays } from '../../utils/format';
 import { tourApi } from '../../services/api';
@@ -17,39 +18,54 @@ export const TourDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { setTour, setDeparture, setGuests } = useBookingDraft();
 
-  const initialTour = MOCK_TOURS.find((t) => t.id === id || t.code === id) || MOCK_TOURS[0];
-  const [tour, setTourState] = useState<Tour>(initialTour);
-  const [departures, setDepartures] = useState<Departure[]>(
-    MOCK_DEPARTURES.filter((d) => d.tourId === initialTour.id)
-  );
-  const [selectedDeparture, setSelectedDepartureState] = useState<Departure>(
-    departures[0] || MOCK_DEPARTURES[0]
-  );
+  const [tour, setTourState] = useState<Tour | null>(null);
+  const [departures, setDepartures] = useState<Departure[]>([]);
+  const [selectedDeparture, setSelectedDepartureState] = useState<Departure | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [adults, setAdults] = useState(2);
   const [childrenCount, setChildrenCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
     const loadTourData = async () => {
+      if (!id) return;
       try {
-        const toursRes = await tourApi.getAll();
-        if (isMounted && toursRes.success && toursRes.data && toursRes.data.length > 0) {
-          const found = toursRes.data.find(
-            (t) => t.id === id || t.code === id || String(t.id) === String(id)
-          );
-          if (found) {
-            setTourState(found);
-            const depRes = await tourApi.getDepartures(found.id);
-            if (isMounted && depRes.success && depRes.data && depRes.data.length > 0) {
-              setDepartures(depRes.data);
-              setSelectedDepartureState(depRes.data[0]);
-            }
+        setIsLoading(true);
+        // Try getting directly by ID or search all
+        let foundTour: Tour | null = null;
+        try {
+          const detailRes = await tourApi.getById(id);
+          if (detailRes.success && detailRes.data) {
+            foundTour = detailRes.data;
+          }
+        } catch {
+          // If direct detail endpoint misses, find in list
+        }
+
+        if (!foundTour) {
+          const toursRes = await tourApi.getAll();
+          if (toursRes.success && toursRes.data) {
+            foundTour = toursRes.data.find(
+              (t) => t.id === id || t.code === id || String(t.id) === String(id)
+            ) || null;
+          }
+        }
+
+        if (isMounted && foundTour) {
+          setTourState(foundTour);
+          const depRes = await tourApi.getDepartures(foundTour.id);
+          if (isMounted && depRes.success && depRes.data && depRes.data.length > 0) {
+            setDepartures(depRes.data);
+            setSelectedDepartureState(depRes.data[0]);
           }
         }
       } catch {
-        // Fallback gracefully
+        // Handled cleanly
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
+
     loadTourData();
     return () => {
       isMounted = false;
@@ -57,11 +73,33 @@ export const TourDetailPage: React.FC = () => {
   }, [id]);
 
   const handleProceedBooking = () => {
+    if (!tour || !selectedDeparture) return;
     setTour(tour);
     setDeparture(selectedDeparture);
     setGuests(adults, childrenCount);
     navigate('/booking/checkout');
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="AIR EXPEDITION" subtitle="RETRIEVING RECORD FROM DATABASE...">
+        <SwissSuspenseLoader label="SYS_DB // RETRIEVING TOUR TELEMETRY" />
+      </PageShell>
+    );
+  }
+
+  if (!tour) {
+    return (
+      <PageShell title="EXPEDITION NOT FOUND" subtitle="DATABASE QUERY RETURNED NULL">
+        <EmptyState
+          title="TOUR RECORD NOT FOUND"
+          description="The requested tour expedition does not exist in the live database matrix."
+          actionLabel="RETURN TO TOURS"
+          actionPath="/tours"
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -138,6 +176,114 @@ export const TourDetailPage: React.FC = () => {
             </div>
             <Itinerary days={tour.itinerary} />
           </div>
+
+          {/* Baggage Allowance & Surcharges Policy Section */}
+          <div className="bg-white border border-[#E5E7EB] p-5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E5E7EB]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#DC2626]" />
+                <h2 className="font-black text-sm uppercase text-black">
+                  BAGGAGE ALLOWANCE & EXTRA SURCHARGES
+                </h2>
+              </div>
+              <span className="font-mono text-[9px] text-[#4B5563]">STANDARD INCLUSION</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+              <div className="p-3 bg-[#F5F5F5] border border-[#E5E7EB]">
+                <div className="text-[10px] text-[#4B5563] uppercase font-bold">CABIN HAND LUGGAGE</div>
+                <div className="text-black font-bold mt-1">1× 7kg Carry-on</div>
+                <div className="text-[10px] text-[#4B5563] mt-0.5">Max 56 × 36 × 23 cm (Included in fare)</div>
+              </div>
+              <div className="p-3 bg-[#F5F5F5] border border-[#E5E7EB]">
+                <div className="text-[10px] text-[#4B5563] uppercase font-bold">CHECKED BAGGAGE</div>
+                <div className="text-black font-bold mt-1">1× 20kg Checked Luggage</div>
+                <div className="text-[10px] text-[#4B5563] mt-0.5">All flights included without extra fee</div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <div className="text-[10px] font-bold text-black uppercase font-mono mb-2">
+                EXTRA BAGGAGE PACKAGES (SELECTABLE AT CHECKOUT):
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono">
+                <div className="border border-[#E5E7EB] p-2 bg-white">
+                  <div className="text-[10px] text-[#4B5563]">+10kg Checked</div>
+                  <div className="font-bold text-[#DC2626] text-xs">+$25</div>
+                </div>
+                <div className="border border-[#E5E7EB] p-2 bg-white">
+                  <div className="text-[10px] text-[#4B5563]">+20kg Checked</div>
+                  <div className="font-bold text-[#DC2626] text-xs">+$45</div>
+                </div>
+                <div className="border border-[#E5E7EB] p-2 bg-white">
+                  <div className="text-[10px] text-[#4B5563]">+30kg Checked</div>
+                  <div className="font-bold text-[#DC2626] text-xs">+$65</div>
+                </div>
+                <div className="border border-[#E5E7EB] p-2 bg-white">
+                  <div className="text-[10px] text-[#4B5563]">Sports Gear</div>
+                  <div className="font-bold text-[#DC2626] text-xs">+$50</div>
+                </div>
+              </div>
+            </div>
+            {tour.baggagePolicy && (
+              <p className="text-[11px] text-[#4B5563] leading-relaxed pt-1">
+                {tour.baggagePolicy}
+              </p>
+            )}
+          </div>
+
+          {/* Cancellation & Refund Policy Section */}
+          <div className="bg-white border border-[#E5E7EB] p-5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E5E7EB]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-black" />
+                <h2 className="font-black text-sm uppercase text-black">
+                  TOUR CANCELLATION & AUTOMATED REFUND POLICY
+                </h2>
+              </div>
+              <span className="font-mono text-[9px] text-[#DC2626] font-bold">TIERED SCHEDULE</span>
+            </div>
+
+            <div className="space-y-2 text-xs font-mono">
+              <div className="flex items-center justify-between p-2.5 bg-[#F5F5F5] border-l-2 border-[#22C55E]">
+                <div>
+                  <span className="font-bold text-black">≥ 15 DAYS BEFORE DEPARTURE</span>
+                  <div className="text-[10px] text-[#4B5563]">Full cancellation allowed</div>
+                </div>
+                <span className="font-bold text-[#22C55E]">100% REFUND (0% PENALTY)</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-[#F5F5F5] border-l-2 border-black">
+                <div>
+                  <span className="font-bold text-black">7 – 14 DAYS BEFORE DEPARTURE</span>
+                  <div className="text-[10px] text-[#4B5563]">Partial airline slot penalty applies</div>
+                </div>
+                <span className="font-bold text-black">70% REFUND (30% PENALTY)</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-[#F5F5F5] border-l-2 border-[#DC2626]">
+                <div>
+                  <span className="font-bold text-black">3 – 6 DAYS BEFORE DEPARTURE</span>
+                  <div className="text-[10px] text-[#4B5563]">Late flight release surcharge</div>
+                </div>
+                <span className="font-bold text-[#DC2626]">40% REFUND (60% PENALTY)</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-[#F5F5F5] border-l-2 border-black">
+                <div>
+                  <span className="font-bold text-black">&lt; 48 HOURS (2 DAYS) BEFORE DEPARTURE</span>
+                  <div className="text-[10px] text-[#4B5563]">Flight manifest locked by civil aviation authority</div>
+                </div>
+                <span className="font-bold text-black">0% REFUND (NON-REFUNDABLE)</span>
+              </div>
+            </div>
+
+            {tour.cancellationPolicy && (
+              <p className="text-[11px] text-[#4B5563] leading-relaxed pt-1">
+                {tour.cancellationPolicy}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Right Column: Sticky Booking Widget (4 cols) */}
@@ -162,7 +308,19 @@ export const TourDetailPage: React.FC = () => {
 
             {/* Departure Picker */}
             <DeparturePicker
-              departures={departures.length > 0 ? departures : [MOCK_DEPARTURES[0]]}
+              departures={departures.length > 0 ? departures : [{
+                id: `dep-${tour.id}-auto`,
+                flightNumber: `${tour.code}-01`,
+                tourId: tour.id,
+                departureAirport: tour.departureCity?.substring(0, 3)?.toUpperCase() || 'SGN',
+                arrivalAirport: tour.destinationCode || 'DAD',
+                departureTime: new Date(Date.now() + 86400000 * 3).toISOString(),
+                arrivalTime: new Date(Date.now() + 86400000 * 3 + 7200000).toISOString(),
+                price: tour.price,
+                seatsAvailable: 30,
+                totalSeats: 180,
+                status: 'ON_TIME',
+              }]}
               selectedId={selectedDeparture?.id}
               onSelect={(dep) => setSelectedDepartureState(dep)}
             />

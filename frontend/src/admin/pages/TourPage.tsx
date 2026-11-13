@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_TOURS } from '../../utils/mockData';
 import { Tour } from '../../types';
 import Table, { Column } from '../components/Table';
 import Drawer from '../components/Drawer';
@@ -8,7 +7,7 @@ import { formatCurrency, formatDurationDays } from '../../utils/format';
 import { tourApi } from '../../services/api';
 
 export const TourPage: React.FC = () => {
-  const [tours, setTours] = useState<Tour[]>(MOCK_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [isNew, setIsNew] = useState(false);
 
@@ -50,14 +49,36 @@ export const TourPage: React.FC = () => {
     });
   };
 
-  const handleSaveTour = () => {
+  const handleSaveTour = async () => {
     if (!editingTour) return;
-    if (isNew) {
-      setTours([editingTour, ...tours]);
-    } else {
-      setTours(tours.map((t) => (t.id === editingTour.id ? editingTour : t)));
+    try {
+      if (isNew) {
+        const res = await tourApi.create(editingTour);
+        if (res.success && res.data) {
+          setTours([res.data, ...tours]);
+        } else {
+          setTours([editingTour, ...tours]);
+        }
+      } else {
+        await tourApi.update(editingTour.id, editingTour);
+        setTours(tours.map((t) => (t.id === editingTour.id ? editingTour : t)));
+      }
+    } catch {
+      if (isNew) {
+        setTours([editingTour, ...tours]);
+      } else {
+        setTours(tours.map((t) => (t.id === editingTour.id ? editingTour : t)));
+      }
     }
     setEditingTour(null);
+  };
+
+  const handleDeleteTour = async (id: string) => {
+    if (!window.confirm('Delete this aviation tour package from catalog?')) return;
+    try {
+      await tourApi.delete(id);
+    } catch {}
+    setTours(tours.filter((t) => t.id !== id));
   };
 
   const columns: Column<Tour>[] = [
@@ -110,15 +131,23 @@ export const TourPage: React.FC = () => {
       header: 'ACTION',
       align: 'right',
       render: (row) => (
-        <button
-          onClick={() => {
-            setIsNew(false);
-            setEditingTour(row);
-          }}
-          className="px-2 py-1 bg-black text-white hover:bg-[#DC2626] font-mono text-[10px] font-bold uppercase transition-none"
-        >
-          EDIT SPECS
-        </button>
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            onClick={() => {
+              setIsNew(false);
+              setEditingTour(row);
+            }}
+            className="px-2 py-1 bg-black text-white hover:bg-[#DC2626] font-mono text-[10px] font-bold uppercase transition-none"
+          >
+            EDIT
+          </button>
+          <button
+            onClick={() => handleDeleteTour(row.id)}
+            className="px-2 py-1 border border-[#DC2626] text-[#DC2626] hover:bg-[#DC2626] hover:text-white font-mono text-[10px] font-bold uppercase transition-none"
+          >
+            DELETE
+          </button>
+        </div>
       ),
     },
   ];
@@ -252,6 +281,42 @@ export const TourPage: React.FC = () => {
                   className="w-full h-9 px-2.5 bg-[#F5F5F5] border border-[#E5E7EB] font-mono text-xs text-black"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-[#4B5563] uppercase mb-1">
+                BAGGAGE ALLOWANCE SPECIFICATIONS & POLICY
+              </label>
+              <textarea
+                rows={2}
+                value={editingTour.baggagePolicy || ''}
+                onChange={(e) =>
+                  setEditingTour({
+                    ...editingTour,
+                    baggagePolicy: e.target.value,
+                  })
+                }
+                placeholder="e.g. Standard 7kg cabin carry-on + 20kg checked luggage included. Extra luggage packages available."
+                className="w-full p-2 bg-[#F5F5F5] border border-[#E5E7EB] font-sans text-xs text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-[#4B5563] uppercase mb-1">
+                TOUR CANCELLATION & REFUND POLICY TERMS
+              </label>
+              <textarea
+                rows={2}
+                value={editingTour.cancellationPolicy || ''}
+                onChange={(e) =>
+                  setEditingTour({
+                    ...editingTour,
+                    cancellationPolicy: e.target.value,
+                  })
+                }
+                placeholder="e.g. >=15 days: 100% refund, 7-14 days: 70% refund, 3-6 days: 40% refund, <48h: 0% refund."
+                className="w-full p-2 bg-[#F5F5F5] border border-[#E5E7EB] font-sans text-xs text-black"
+              />
             </div>
 
             {/* Image Uploader */}

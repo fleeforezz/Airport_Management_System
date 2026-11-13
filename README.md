@@ -1,534 +1,525 @@
-# ✈️ Airport Management & Booking System
+# ✈️ AeroFlight Expeditions — Flight-Exclusive Tour & Aviation Booking Platform
 
-> **Enterprise-Grade Aviation Operations & Commercial Flight Booking Platform**  
-> Built with **ASP.NET Core 8 Web API**, **Entity Framework Core 8 (Code-First)**, **React 19**, **TypeScript**, and **Vite 6**.  
-> Styled strictly under the **Swiss Modernism 2.0** design philosophy.
-
----
-
-## 📑 Table of Contents
-
-- [1. Executive Overview](#1-executive-overview)
-- [2. System Architecture](#2-system-architecture)
-- [3. Complete Technology Stack](#3-complete-technology-stack)
-- [4. Database Architecture & ERD](#4-database-architecture--erd)
-- [5. Backend Architecture (ASP.NET Core & EF Core)](#5-backend-architecture-aspnet-core--ef-core)
-- [6. Front-End Portals & User Experience](#6-front-end-portals--user-experience)
-- [7. Design System: Swiss Modernism 2.0](#7-design-system-swiss-modernism-20)
-- [8. Repository Directory Structure](#8-repository-directory-structure)
-- [9. Quick Start & Installation](#9-quick-start--installation)
-- [10. Industry Compliance & Business Rules](#10-industry-compliance--business-rules)
-- [11. Complete Documentation Index](#11-complete-documentation-index)
+> **Nền tảng Đặt Lịch Tour Du Lịch Độc Quyền Hàng Không (Flight-Exclusive Travel & Tour Booking Platform)**  
+> Phát triển trên nền tảng **ASP.NET Core (.NET 8/9 Web API)**, **Entity Framework Core (Code-First)**, **PostgreSQL**, **React 18/19**, **TypeScript**, và **Vite**.  
+> Thiết kế giao diện tuân thủ triệt để ngôn ngữ thị giác **Swiss Modernism 2.0** (Zero Radius, Hairlines, Flat 2D, Inter & JetBrains Mono).
 
 ---
 
-## 1. Executive Overview
+## 📑 Mục Lục Tài Liệu (Table of Contents)
 
-The **Airport Management & Booking System** is an end-to-end platform bridging two complex domains of the aviation industry:
-
-1. **Airside Flight & Fleet Operations (Back-Office / Dispatch Tier):**  
-   Empowers airport dispatchers, air traffic supervisors, and airline operations controllers to manage physical fleet assets, configure seating capacities, schedule flight slots, update real-time Flight Information Display Systems (FIDS), and audit passenger manifests.
-2. **Landside Commercial & Booking Services (Customer Experience Tier):**  
-   Provides travelers with an ultra-fast, high-aesthetic web application to discover destinations, compare packaged airline tours, select physical aircraft seats, complete multi-passenger bookings with Sabre/Amadeus standard PNR references, redeem promotional coupons, and manage e-tickets.
+- [1. Giới Thiệu Tổng Quan & Chuyển Đổi Nghiệp Vụ](#1-giới-thiệu-tổng-quan--chuyển-đổi-nghiệp-vụ)
+- [2. Nghiệp Vụ Cốt Lõi & Quy Tắc Vận Hành (Domain Rules)](#2-nghiệp-vụ-cốt-lõi--quy-tắc-vận-hành-domain-rules)
+  - [2.1 Phương Tiện Di Chuyển Độc Quyền Hàng Không](#21-phương-tiện-di-chuyển-độc-quyền-hàng-không)
+  - [2.2 Nghiệp Vụ Phụ Thu Hành Lý (Baggage Surcharges)](#22-nghiệp-vụ-phụ-thu-hành-lý-baggage-surcharges)
+  - [2.3 Chính Sách Hủy Tour & Hoàn Tiền Tự Động (Cancellation & Refund Policy)](#23-chính-sách-hủy-tour--hoàn-tiền-tự-động-cancellation--refund-policy)
+  - [2.4 Mô Hình Phân Quyền Người Dùng 3 Cấp Độ (3-Tier RBAC)](#24-mô-hình-phân-quyền-người-dùng-3-cấp-độ-3-tier-rbac)
+- [3. Kiến Trúc Hệ Thống (System Architecture)](#3-kiến-trúc-hệ-thống-system-architecture)
+- [4. Ngăn Xếp Công Nghệ (Technology Stack)](#4-ngăn-xếp-công-nghệ-technology-stack)
+- [5. Thiết Kế Cơ Sở Dữ Liệu & ERD (Entity Relationship Diagram)](#5-thiết-kế-cơ-sở-dữ-liệu--erd-entity-relationship-diagram)
+- [6. Danh Mục REST API (API Endpoints Directory)](#6-danh-mục-rest-api-api-endpoints-directory)
+- [7. Hệ Thống Thiết Kế: Swiss Modernism 2.0](#7-hệ-thống-thiết-kế-swiss-modernism-20)
+- [8. Cấu Trúc Mã Nguồn Dự Án (Project Structure)](#8-cấu-trúc-mã-nguồn-dự-án-project-structure)
+- [9. Hướng Dẫn Cài Đặt & Khởi Chạy (Setup & Execution Guide)](#9-hướng-dẫn-cài-đặt--khởi-chạy-setup--execution-guide)
+- [10. Tài Khoản Kiểm Thử Mặc Định (Demo Test Matrix)](#10-tài-khoản-kiểm-thử-mặc-định-demo-test-matrix)
 
 ---
 
-## 2. System Architecture
+## 1. Giới Thiệu Tổng Quan & Chuyển Đổi Nghiệp Vụ
 
-The solution implements an **N-Tier Clean Architecture** separating concerns across presentation, business services, and database persistence:
+Dự án **AeroFlight Expeditions** là nền tảng thương mại điện tử chuyên biệt hóa trong lĩnh vực du lịch lữ hành cao cấp, trong đó **phương tiện vận chuyển duy nhất và bắt buộc xuyên suốt toàn bộ hành trình là Hàng Không (Aviation Exclusive)**.
+
+Hệ thống kết nối trực tiếp ba thực thể chính:
+1. **Khách du lịch (Traveler):** Trải nghiệm tìm kiếm, lựa chọn gói tour bay cao cấp, đặt chỗ bay, mua thêm gói hành lý ký gửi, thanh toán và quản lý vé điện tử minh bạch.
+2. **Đơn vị điều hành tour (Tour Operator):** Quản lý toàn bộ vòng đời tour du lịch (thêm, sửa, xóa), cấu hình chính sách hành lý, chính sách hủy tour, liên kết với các hãng hàng không được hỗ trợ và theo dõi danh sách hành khách (PNR Manifest).
+3. **Quản trị viên hệ thống (Administrator):** Quản trị tài khoản người dùng, giám sát các hãng hàng không đối tác, điều phối chi tiết các slot chuyến bay, và phát hành các bài viết hướng dẫn cẩm nang du lịch.
+
+---
+
+## 2. Nghiệp Vụ Cốt Lõi & Quy Tắc Vận Hành (Domain Rules)
+
+### 2.1 Phương Tiện Di Chuyển Độc Quyền Hàng Không
+- Mọi gói tour trong hệ thống đều định danh loại hình vận tải là `FLIGHT_EXCLUSIVE`.
+- Mỗi tour luôn gắn liền với mã hãng bay (`AirlineCode`), thông tin chuyến bay cụ thể, sân bay xuất phát (`Origin Airport - IATA`), sân bay đến (`Destination Airport - IATA`) và sơ đồ phân bổ vị trí ghế ngồi khoang khách (`Window / Aisle / Middle`).
+
+### 2.2 Nghiệp Vụ Phụ Thu Hành Lý (Baggage Surcharges)
+Để đáp ứng tiêu chuẩn khai thác thương mại hàng không, hệ thống áp dụng cơ chế quản lý hành lý minh bạch:
+- **Tiêu chuẩn mặc định miễn phí (Base Inclusion):** Mọi hành khách đều được bao gồm sẵn **1 kiện hành lý xách tay 7kg** + **1 kiện hành lý ký gửi tiêu chuẩn 20kg**.
+- **Các gói phụ thu hành lý lựa chọn thêm (Add-on Baggage Packages):**
+  | Mã Gói | Tên Gói Hành Lý | Trọng Lượng Bổ Sung | Mức Phụ Thu | Mô Tả |
+  | :--- | :--- | :--- | :--- | :--- |
+  | `STANDARD` | Gói Tiêu Chuẩn | 0 kg | **$0.00** | 7kg xách tay + 20kg ký gửi (Đã bao gồm trong giá vé) |
+  | `PLUS_10KG` | Thêm 10kg Ký Gửi | +10 kg | **+$25.00** | Nâng tổng hành lý ký gửi lên 30kg |
+  | `PLUS_20KG` | Thêm 20kg Ký Gửi | +20 kg | **+$45.00** | Nâng tổng hành lý ký gửi lên 40kg |
+  | `PLUS_30KG` | Thêm 30kg Hàng Nặng | +30 kg | **+$65.00** | Nâng tổng hành lý ký gửi lên 50kg |
+  | `SPORTS_EQUIPMENT`| Dụng Cụ Thể Thao | Trọn bộ thiết bị | **+$50.00** | Dành cho túi Golf, ván lướt sóng, ván trượt tuyết |
+
+- **Quy tắc tính toán & lưu trữ:** Mức phụ thu hành lý được cộng trực tiếp vào `TotalPrice` trong đơn đặt chỗ, đồng thời lưu trữ chi tiết mã gói `BaggagePackage` và số tiền `BaggageFee` vào bảng `Bookings` trong cơ sở dữ liệu.
+
+### 2.3 Chính Sách Hủy Tour & Hoàn Tiền Tự Động (Cancellation & Refund Policy)
+Chính sách hủy tour được quy định công khai tại trang chi tiết tour và bắt buộc khách hàng phải xác nhận đồng ý tại trang Checkout:
+
+```
+                  THỜI ĐIỂM HỦY TOUR SO VỚI NGÀY KHỞI HÀNH (DEPARTURE DATE)
+                                             |
+     +-------------------+-------------------+-------------------+-------------------+
+     |                   |                   |                   |                   |
+≥ 15 Ngày Trước Giờ Bay  7 - 14 Ngày Trước   3 - 6 Ngày Trước   < 48 Giờ Trước Giờ Bay
+     |                   |                   |                   |                   |
+     v                   v                   v                   v
+Hoàn Tiền 100%       Hoàn Tiền 70%       Hoàn Tiền 40%       Hoàn Tiền 0%
+(Phí phạt: 0%)       (Phí phạt: 30%)     (Phí phạt: 60%)     (Không hoàn lại)
+```
+
+- **Quy tắc giải phóng chỗ:** Khi hủy tour thành công, trạng thái đơn chuyển sang `CANCELLED`, hệ thống tự động ghi nhận `CancellationDate`, `CancellationReason`, số tiền hoàn lại `RefundAmount`, đồng thời hoàn trả số lượng ghế ngồi về lại kho chỗ trống của chuyến bay (`SeatsAvailable`).
+
+### 2.4 Mô Hình Phân Quyền Người Dùng 3 Cấp Độ (3-Tier RBAC)
+
+Hệ thống phân tách quyền hạn rành mạch giữa 3 nhóm người dùng:
+
+| Quyền Hạn / Tính Năng | 👑 ADMIN (Quản Trị Viên) | 🏢 TOUR OPERATOR (Điều Hành Tour) | 🎒 TRAVELER (Khách Du Lịch) |
+| :--- | :---: | :---: | :---: |
+| **Đăng ký tài khoản hệ thống** | Được chỉ định / Cấp quyền | ✅ Đăng ký trực tiếp role `TOUR_OPERATOR` | ✅ Đăng ký trực tiếp role `TRAVELER` |
+| **Tìm kiếm & Đặt tour hàng không** | Có thể xem | Có thể xem | ✅ Đặt tour, chọn ghế, chọn hành lý |
+| **Hủy tour & Nhận tiền hoàn lại** | Giám sát | Giám sát | ✅ Hủy theo khung chính sách |
+| **Thêm / Sửa / Xóa Tour Du Lịch** | ❌ **Không được phép can thiệp** | ✅ **Toàn quyền quản lý Tour** | ❌ Không có quyền |
+| **Thiết lập chính sách hành lý & hủy** | ❌ Không can thiệp | ✅ Toàn quyền cấu hình | ❌ Chỉ xem |
+| **Quản lý danh sách Hãng Hàng Không** | ✅ Quản lý danh mục hãng bay | ✅ Quản lý hãng bay hỗ trợ | ❌ Chỉ xem |
+| **Quản lý Slot & Chuyến Bay (FIDS)** | ✅ Quản lý chi tiết chuyến bay | ✅ Quản lý lịch bay của tour | ❌ Chỉ xem |
+| **Quản lý Tài Khoản & Phân Quyền** | ✅ Toàn quyền (Đổi Role, Xóa User) | ❌ Không có quyền | ❌ Chỉ quản lý Profile cá nhân |
+| **Đăng bài viết & Cẩm nang du lịch** | ✅ Toàn quyền soạn thảo & xuất bản | ❌ Không có quyền | ❌ Chỉ đọc bài viết |
+| **Xem Danh Sách Khách Đặt Vé (PNR)** | ✅ Giám sát tổng thể | ✅ Xem chi tiết khách đặt tour của mình | ❌ Chỉ xem vé của mình |
+
+### 2.5 Quy Chế Bảo Vệ & Phân Luồng Cổng Truy Cập (Portal Access Security Gates)
+
+Hệ thống thiết lập rào chắn bảo vệ phân quyền (RBAC Route Guard & Access Control):
+1. **Admin Portal (`/admin` hoặc `admin.html?mode=admin`):**
+   - **Chỉ duy nhất tài khoản có vai trò `ADMIN`** mới được phép truy cập.
+   - Nếu chưa đăng nhập: Hệ thống chuyển hướng yêu cầu xác thực (`401 Unauthorized`).
+   - Nếu người dùng đăng nhập bằng tài khoản `TOUR_OPERATOR`: Hệ thống chặn quyền và hiển thị thông báo yêu cầu tài khoản Administrator.
+   - Nếu là `TRAVELER`: Chặn truy cập tuyệt đối (`403 Forbidden`).
+2. **Operation Portal (`/operations` hoặc `admin.html?mode=operator`):**
+   - **Chỉ duy nhất tài khoản có vai trò `TOUR_OPERATOR`** mới được phép truy cập.
+   - Quản lý vòng đời tour, cấu hình chính sách hành lý & hủy tour, kết nối hãng bay đối tác.
+   - Nếu là `TRAVELER`: Chặn truy cập tuyệt đối (`403 Forbidden`).
+3. **Cổng Khách Hàng (Passenger WebApp - `/`, `/tours`, `/booking/*`):**
+   - Dành cho **Traveler** trải nghiệm dịch vụ. Khách hàng chỉ có quyền xem danh mục, đặt tour bay độc quyền, phân bổ ghế ngồi, chọn mua gói phụ thu hành lý và thực hiện thanh toán PNR. Khách hàng tuyệt đối không có quyền can thiệp vào bất kỳ cổng quản trị nào.
+
+---
+
+## 3. Kiến Trúc Hệ Thống (System Architecture)
+
+Hệ thống được thiết kế theo chuẩn **Clean Architecture (N-Tier Enterprise Architecture)** với ASP.NET Core và PostgreSQL:
 
 ```
 +----------------------------------------------------------------------------------------------------+
 |                                         PRESENTATION TIER                                          |
 |                                                                                                    |
 |    +------------------------------------------+    +------------------------------------------+    |
-|    |      Passenger WebApp (Port 5173)        |    |    Admin Dispatch Portal (Port 5174)     |    |
-|    |   React 19 + TypeScript + Tailwind CSS   |    |    FIDS Scheduling + Manifest Controller  |    |
+|    |      Passenger WebApp (Port 5000/5173)   |    |   Admin & Tour Operator Portal (5174)    |    |
+|    |   React 18 + TypeScript + Tailwind CSS   |    |    RBAC Switcher + Flight Catalog Manager|    |
 |    +------------------------------------------+    +------------------------------------------+    |
 +-------------------------------------------------+--------------------------------------------------+
                                                   | JSON REST APIs / Bearer JWT
                                                   v
 +----------------------------------------------------------------------------------------------------+
-|                                    ASP.NET CORE 8 WEB API TIER                                     |
-|  - RESTful Endpoints (/api/v1/flights, /api/v1/bookings, /api/v1/tours, /api/v1/auth)              |
-|  - Role-Based Access Control (RBAC: USER, DISPATCHER, AIRPORT_STAFF, ADMIN)                        |
-|  - Swagger / OpenAPI Interactive Documentation                                                     |
-|  - Global Exception Handling & Security Middleware                                                 |
+|                                    ASP.NET CORE WEB API LAYER                                      |
+|  - API.Controllers: Tours, Bookings, Airlines, Users, Departures, Destinations, Articles, Coupons   |
+|  - Swagger / OpenAPI UI (/swagger)                                                                 |
+|  - Global Exception Handling & CORS Middleware                                                      |
 +-------------------------------------------------+--------------------------------------------------+
                                                   |
                                                   v
 +----------------------------------------------------------------------------------------------------+
 |                                    APPLICATION SERVICES LAYER                                      |
-|  - Flight Dispatch Service & Slot Assignment    - PNR Reference Generator (Sabre/Amadeus Format)  |
-|  - Anti-Overbooking Concurrency Validator       - Fare & Promotion Calculation Engine              |
+|  - TourService (CRUD, Inclusions/Exclusions, Baggage & Cancellation Policy mapping)               |
+|  - BookingService (Automated Tiered Refund Calculation, Baggage Fee Engine, Seat Release)         |
+|  - AirlineService & UserService (Identity Management, RBAC role updates)                           |
 +-------------------------------------------------+--------------------------------------------------+
                                                   |
                                                   v
 +----------------------------------------------------------------------------------------------------+
-|                             ENTITY FRAMEWORK CORE 8 (PERSISTENCE)                                  |
-|  - AirportDbContext (Code-First Fluent API)     - Generic Repository & Unit of Work Pattern        |
-|  - Automatic Migrations & Seeding Engine        - Composite Unique Constraints                     |
+|                                  DOMAIN LAYER (ENTERPRISE CORE)                                    |
+|  - Entities: Tour, ItineraryDay, Booking, Passenger, Airline, Flight, UserAccount, Article, etc.  |
+|  - Domain Rules: TransportType = "FLIGHT_EXCLUSIVE", Precision Configuration                       |
 +-------------------------------------------------+--------------------------------------------------+
                                                   |
                                                   v
 +----------------------------------------------------------------------------------------------------+
-|                                          DATABASE STORAGE                                          |
-|                Microsoft SQL Server 2022 / PostgreSQL 16 (15 Relational Entities)                  |
+|                            INFRASTRUCTURE LAYER (DATA PERSISTENCE)                                 |
+|  - AirportDbContext (Npgsql PostgreSQL Provider)                                                   |
+|  - Repository<T> Pattern & Unit of Work                                                            |
+|  - DbInitializer (Auto-Seeding Admin, Tour Operator, Traveler, Airlines, Flights, Tours)          |
++-------------------------------------------------+--------------------------------------------------+
+                                                  |
+                                                  v
++----------------------------------------------------------------------------------------------------+
+|                                         POSTGRESQL DATABASE                                        |
+|                   Remote PostgreSQL Database Cluster (Tables, Foreign Keys, Indexes)               |
 +----------------------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 3. Complete Technology Stack
+## 4. Ngăn Xếp Công Nghệ (Technology Stack)
 
-| Layer | Technology | Version | Purpose |
+| Phân Vùng | Công Nghệ | Phiên Bản | Mục Đích Sử Dụng |
 | :--- | :--- | :--- | :--- |
-| **Frontend Framework** | **React** | `19.0.0` | Modern UI with concurrent rendering and hooks |
-| **Language (Client)** | **TypeScript** | `5.7.2` | Strict end-to-end type safety |
-| **Build & Dev Tool** | **Vite** | `6.2.0` | Sub-second HMR and multi-page application bundling |
-| **Styling & CSS** | **Tailwind CSS** | `3.4.17` | Utility-first Swiss Modernism styling system |
-| **Icons & Assets** | **Lucide React** | `0.475.0` | Minimalist geometric interface icons |
-| **HTTP Client** | **Axios** | `1.7.9` | Interceptor-driven HTTP with JWT injection |
-| **Backend Framework** | **ASP.NET Core Web API**| `.NET 8.0` | High-throughput asynchronous REST API |
-| **Language (Server)** | **C#** | `12.0` | Strongly typed object-oriented server code |
-| **ORM Engine** | **Entity Framework Core** | `8.0.x` | Code-First relational mapping, LINQ queries, and migrations |
-| **Database Server** | **SQL Server / PostgreSQL**| `2022 / 16` | ACID-compliant relational data storage |
-| **API Documentation** | **Swagger / OpenAPI** | `6.5.0` | Interactive schema testing and client contract verification |
-| **Authentication** | **JWT Bearer + Identity** | `8.0.x` | Stateless token authentication with claims-based RBAC |
-| **Aviation Standards**| **IATA / ICAO / PNR** | Industry Std | 3-letter IATA, 4-letter ICAO, 6-char PNR booking codes |
+| **Backend Framework** | **ASP.NET Core Web API** | `.NET 8.0 / 9.0` | Cung cấp RESTful API tốc độ cao, đa luồng |
+| **ORM / Data Access** | **Entity Framework Core** | `8.0 / 9.0` | Code-First Mapping, Migration tự động, LINQ queries |
+| **Cơ Sở Dữ Liệu** | **PostgreSQL** | `15+ / 16` | Cơ sở dữ liệu quan hệ ACID tiêu chuẩn doanh nghiệp |
+| **Thư Viện Kết Nối DB**| **Npgsql.EntityFrameworkCore** | `8.0+` | PostgreSQL driver tối ưu cho EF Core |
+| **API Documentation** | **Swashbuckle (Swagger UI)**| `6.5.0` | Tài liệu hóa và giao diện thử nghiệm API tương tác |
+| **Mã Hóa & Mật Khẩu** | **BCrypt.Net-Next** | `4.0.3` | Băm mật khẩu người dùng với muối an toàn cao |
+| **Frontend Framework** | **React** | `18.3 / 19.0` | Thư viện xây dựng giao diện người dùng theo component |
+| **Ngôn Ngữ Client** | **TypeScript** | `5.7.2` | Đảm bảo an toàn kiểu dữ liệu từ đầu đến cuối |
+| **Build & Bundler Tool**| **Vite** | `6.2.0` | Khởi động HMR siêu tốc và hỗ trợ xuất bản Multi-App |
+| **CSS & Design System**| **Tailwind CSS** | `3.4.17` | Hiện thực hóa phong cách **Swiss Modernism 2.0** |
+| **HTTP Client** | **Axios** | `1.7.9` | Giao tiếp API với interceptors tự động |
 
 ---
 
-## 4. Database Architecture & ERD
+## 5. Thiết Kế Cơ Sở Dữ Liệu & ERD (Entity Relationship Diagram)
 
-The database schema is normalized to **Third Normal Form (3NF)** and consists of **15 entities** with enforced referential integrity.
-
-### 4.1. Visual Entity Relationship Diagram (ERD)
+Sơ đồ quan hệ thực thể (ERD) thể hiện đầy đủ cấu trúc quan hệ giữa các thực thể cốt lõi:
 
 ```mermaid
 erDiagram
-    AIRPORT ||--o{ FLIGHT : "cất cánh (origin_airport_id)"
-    AIRPORT ||--o{ FLIGHT : "hạ cánh (destination_airport_id)"
-    AIRPORT ||--o{ DESTINATION : "phục vụ vùng"
-    
-    AIRLINE ||--o{ AIRCRAFT : "sở hữu / khai thác"
-    AIRLINE ||--o{ FLIGHT : "điều hành chuyến"
-    AIRLINE ||--o{ TOUR : "hãng bay đối tác"
-    
-    AIRCRAFT ||--o{ SEAT : "cấu hình ghế"
-    AIRCRAFT ||--o{ FLIGHT : "phân công tàu bay"
-    
-    DESTINATION ||--o{ TOUR : "thuộc điểm đến"
-    
-    TOUR ||--o{ ITINERARY_DAY : "lịch trình theo ngày"
-    TOUR ||--o{ FLIGHT : "gói chuyến bay"
-    TOUR ||--o{ BOOKING : "đặt theo tour"
-    
-    FLIGHT ||--o{ BOOKING : "đặt vé chuyến bay"
-    FLIGHT ||--o{ SEAT_ASSIGNMENT : "ghế theo chuyến"
-    
-    USER_ACCOUNT ||--o{ BOOKING : "tạo đơn đặt"
-    USER_ACCOUNT ||--o{ ARTICLE : "tác giả bài viết"
-    
-    COUPON ||--o{ BOOKING : "áp dụng giảm giá"
-    
-    BOOKING ||--|{ PASSENGER : "danh sách hành khách"
-    BOOKING ||--|{ PAYMENT : "giao dịch thanh toán"
-    
-    PASSENGER ||--o{ SEAT_ASSIGNMENT : "được chỉ định ghế"
-    SEAT ||--o{ SEAT_ASSIGNMENT : "vị trí ghế vật lý"
+    UserAccount ||--o{ Tour : "creates (as Operator)"
+    UserAccount ||--o{ Booking : "places (as Traveler)"
+    Airline ||--o{ Flight : "operates"
+    Destination ||--o{ Flight : "departs/arrives"
+    Destination ||--o{ Tour : "locates"
+    Tour ||--o{ Flight : "schedules departures"
+    Tour ||--o{ ItineraryDay : "details schedule"
+    Tour ||--o{ Booking : "is booked in"
+    Flight ||--o{ FlightSeat : "has layout"
+    Flight ||--o{ Booking : "allocates seats"
+    Booking ||--o{ Passenger : "manifests"
 
-    AIRPORT {
-        int id PK
-        string iata_code "IATA 3-char (SGN, DAD)"
-        string icao_code "ICAO 4-char (VVTS)"
-        string name "Airport Name"
-        string city "City"
-        string country "Country"
-        string timezone "Timezone"
+    UserAccount {
+        int Id PK
+        string Username UK
+        string Email UK
+        string PasswordHash
+        string FullName
+        string Phone
+        string Role "ADMIN | TOUR_OPERATOR | TRAVELER"
+        datetime CreatedAt
     }
 
-    AIRLINE {
-        int id PK
-        string iata_code "IATA 2-char (VN, VJ)"
-        string icao_code "ICAO 3-char (HVN)"
-        string name "Airline Name"
-        string country "Country"
-        string logo_url "Logo Asset"
+    Airline {
+        int Id PK
+        string Code UK "VN, VJ, QH, SQ..."
+        string Name
+        string Country
+        string LogoUrl
+        bool IsActive
     }
 
-    AIRCRAFT {
-        int id PK
-        int airline_id FK
-        string registration_number "Tail No (VN-A899)"
-        string model "Model (Airbus A350-900)"
-        int capacity "Seating capacity"
-        string status "ACTIVE, MAINTENANCE"
+    Destination {
+        int Id PK
+        string Code UK "DAD, SGN, HAN, NRT, JFK"
+        string Name
+        string City
+        string Country
+        string AirportCode
+        string AirportName
+        string ImageUrl
+        string Description
     }
 
-    SEAT {
-        int id PK
-        int aircraft_id FK
-        string seat_number "Code (12A, 14C)"
-        string travel_class "ECONOMY, BUSINESS"
-        boolean is_exit_row "Emergency row"
+    Tour {
+        int Id PK
+        string Code UK "VN-DAD-01"
+        string Title
+        string Subtitle
+        int DestinationId FK
+        decimal Price
+        int DurationDays
+        int DurationNights
+        string DepartureCity
+        string TransportType "FLIGHT_EXCLUSIVE"
+        string AirlineCode
+        string AirlineName
+        string FeaturedImage
+        int OperatorId FK
+        string BaggagePolicy "Allowance details"
+        string CancellationPolicy "Refund tiers"
+        string InclusionsJson
+        string ExclusionsJson
+        string Status "ACTIVE | DRAFT | SOLD_OUT"
     }
 
-    DESTINATION {
-        int id PK
-        int airport_id FK
-        string code "DAD, JFK"
-        string name "Da Nang, Tokyo"
-        string city "City"
-        string country "Country"
-        string image_url "Hero graphic"
-        string climate "Climate tips"
+    ItineraryDay {
+        int Id PK
+        int TourId FK
+        int DayNumber
+        string Title
+        string Description
+        string ActivitiesJson
+        string Meals
+        string Stay
     }
 
-    TOUR {
-        int id PK
-        int destination_id FK
-        int airline_id FK
-        string code "VN-DAD-01"
-        string title "Tour Title"
-        string subtitle "Subtitle"
-        decimal price "Base price"
-        int duration_days "Days"
-        int duration_nights "Nights"
-        string transport_type "FLIGHT, COMBO"
-        string status "ACTIVE, DRAFT"
+    Flight {
+        int Id PK
+        int TourId FK
+        string FlightNumber "VN-124"
+        string DepartureAirport "SGN"
+        string ArrivalAirport "DAD"
+        datetime DepartureTime
+        datetime ArrivalTime
+        int SeatsAvailable
+        int TotalSeats
+        decimal Price
+        string AircraftModel "Airbus A350-900"
+        string Terminal
+        string Gate
+        string Status "ON_TIME | DELAYED | BOARDING | CANCELLED"
     }
 
-    ITINERARY_DAY {
-        int id PK
-        int tour_id FK
-        int day_number "Day Index (1, 2...)"
-        string title "Title"
-        string description "Narrative"
-        string meals "Meals"
-        string stay "Accommodation"
+    FlightSeat {
+        int Id PK
+        int FlightId FK
+        string SeatNumber "12A, 14B..."
+        string TravelClass "ECONOMY | BUSINESS"
+        bool IsOccupied
+        decimal PriceModifier
     }
 
-    FLIGHT {
-        int id PK
-        int tour_id FK
-        int origin_airport_id FK
-        int destination_airport_id FK
-        int airline_id FK
-        int aircraft_id FK
-        string flight_number "VN-124"
-        datetime departure_time "STD (UTC)"
-        datetime arrival_time "STA (UTC)"
-        string terminal "T1, T2"
-        string gate "Boarding Gate"
-        int total_seats "Capacity"
-        int seats_available "Available"
-        decimal price "Base Fare"
-        string status "SCHEDULED, ON_TIME, BOARDING, DELAYED"
+    Booking {
+        int Id PK
+        string BookingCode UK "BK-2026-XXXX"
+        int UserId FK
+        int TourId FK
+        int FlightId FK
+        decimal TotalPrice
+        decimal DiscountAmount
+        string CouponCode
+        string BaggagePackage "STANDARD | PLUS_10KG | PLUS_20KG..."
+        decimal BaggageFee
+        decimal RefundAmount "Calculated on cancellation"
+        string CancellationReason
+        datetime CancellationDate
+        string PaymentMethod "CREDIT_CARD | BANK_TRANSFER"
+        string Status "PENDING | CONFIRMED | PAID | CANCELLED"
+        string ContactName
+        string ContactEmail
+        string ContactPhone
+        datetime CreatedAt
     }
 
-    USER_ACCOUNT {
-        int id PK
-        string username "Username"
-        string email "Email"
-        string password_hash "Hash"
-        string full_name "Full Name"
-        string phone "Phone"
-        string role "USER, DISPATCHER, ADMIN"
-        string zalo_id "Zalo OA Open ID"
-        datetime created_at "Created at"
+    Passenger {
+        int Id PK
+        int BookingId FK
+        string FullName
+        string Gender "MALE | FEMALE"
+        string PassengerType "ADULT | CHILD"
+        string SelectedSeat "12A"
     }
 
-    COUPON {
-        int id PK
-        string code "FLYSUMMER"
-        string description "Promo description"
-        decimal discount_percent "Percentage"
-        decimal discount_amount "Flat amount"
-        decimal min_spend "Minimum spend"
-        decimal max_discount "Ceiling discount"
-        datetime valid_until "Expiration"
-        int usage_count "Times used"
-        boolean is_active "Active flag"
+    Article {
+        int Id PK
+        string Slug UK
+        string Title
+        string Summary
+        string Content
+        string CoverImage
+        string Author
+        string Category
+        datetime PublishedAt
     }
 
-    BOOKING {
-        int id PK
-        string booking_reference "PNR Code (BK-2026-8849)"
-        int user_id FK
-        int flight_id FK
-        int tour_id FK
-        int coupon_id FK
-        string customer_name "Contact Name"
-        string customer_email "Contact Email"
-        string customer_phone "Contact Phone"
-        int adults_count "Adults"
-        int children_count "Children"
-        decimal total_price "Gross Amount"
-        decimal discount_amount "Discount"
-        string booking_status "PENDING, PAID, COMPLETED"
-        datetime created_at "Created timestamp"
-    }
-
-    PASSENGER {
-        int id PK
-        int booking_id FK
-        string full_name "Legal full name"
-        date date_of_birth "Birth date"
-        string id_or_passport "Passport / ID"
-        string gender "MALE, FEMALE, OTHER"
-        string passenger_type "ADULT, CHILD, INFANT"
-    }
-
-    SEAT_ASSIGNMENT {
-        int id PK
-        int passenger_id FK
-        int flight_id FK
-        int seat_id FK
-        int booking_id FK
-        string assigned_seat_number "14A"
-        string boarding_group "Zone 2"
-        boolean is_checked_in "Checked in flag"
-    }
-
-    PAYMENT {
-        int id PK
-        int booking_id FK
-        string transaction_reference "Gateway Ref"
-        decimal amount "Amount"
-        string payment_method "CREDIT_CARD, BANK, ZALO_PAY"
-        string payment_status "PENDING, SUCCESS, FAILED"
-        datetime created_at "Timestamp"
-    }
-
-    ARTICLE {
-        int id PK
-        int author_id FK
-        string slug "SEO Slug"
-        string title "Headline"
-        string summary "Summary"
-        string content "Content Body"
-        string category "GUIDE, NEWS"
-        datetime published_at "Published at"
+    Coupon {
+        int Id PK
+        string Code UK
+        decimal DiscountPercent
+        decimal DiscountAmount
+        decimal MinSpend
+        bool IsActive
     }
 ```
 
-*For complete data dictionary and SQL column specifications, see [docs/DATABASE_ERD.md](file:///d:/Github/fleeforezz/Airport_Management_System/docs/DATABASE_ERD.md).*  
-*To view or edit the interactive diagram, open [Airport_Management_System_UML.drawio](file:///d:/Github/fleeforezz/Airport_Management_System/Airport_Management_System_UML.drawio).*
+---
+
+## 6. Danh Mục REST API (API Endpoints Directory)
+
+Hệ thống cung cấp hệ thống API đồng bộ được cấu trúc rõ ràng:
+
+### 6.1 Authentication & Profile (`/api/Auth`)
+- `POST /api/Auth/register`: Đăng ký tài khoản mới. Hỗ trợ truyền `role`: `"TRAVELER"` hoặc `"TOUR_OPERATOR"`.
+- `POST /api/Auth/login`: Đăng nhập hệ thống bằng email và mật khẩu, trả về JWT Token và thông tin User.
+- `GET /api/Auth/me`: Lấy thông tin tài khoản hiện tại đang đăng nhập.
+
+### 6.2 Tour Operations (`/api/Tours`)
+- `GET /api/Tours`: Lấy danh sách tour độc quyền hàng không (hỗ trợ lọc theo từ khóa `search` và `destinationId`).
+- `GET /api/Tours/{id}`: Xem chi tiết tour (bao gồm lịch trình, chính sách hành lý, chính sách hủy tour).
+- `GET /api/Tours/{id}/departures`: Lấy danh sách các slot chuyến bay khởi hành tương ứng của tour.
+- `POST /api/Tours`: **[Tour Operator Only]** Tạo mới gói tour du lịch bay.
+- `PUT /api/Tours/{id}`: **[Tour Operator Only]** Chỉnh sửa thông tin tour, lịch trình và chính sách.
+- `DELETE /api/Tours/{id}`: **[Tour Operator Only]** Xóa tour khỏi danh mục khai thác.
+
+### 6.3 Flight Bookings & Refund (`/api/Bookings`)
+- `POST /api/Bookings`: Tạo đơn đặt chỗ mới, bao gồm chọn ghế, gói phụ thu hành lý (`BaggagePackage`, `BaggageFee`).
+- `GET /api/Bookings`: Lấy danh sách tất cả các đơn đặt chỗ (Dành cho Quản trị viên và Tour Operator theo dõi Manifest).
+- `GET /api/Bookings/my`: Lấy danh sách đơn đặt tour của cá nhân khách hàng đang đăng nhập.
+- `GET /api/Bookings/{referenceOrId}`: Tra cứu vé điện tử theo mã PNR (`bookingCode`) hoặc ID.
+- `POST /api/Bookings/{id}/cancel`: **[Traveler/Operator]** Hủy đơn đặt tour. Tự động áp dụng công thức hoàn tiền theo chính sách và giải phóng ghế ngồi.
+- `PATCH /api/Bookings/{id}/status`: Cập nhật trạng thái vé (`PAID`, `CONFIRMED`, `CANCELLED`).
+
+### 6.4 Airline Directory (`/api/Airlines`)
+- `GET /api/Airlines`: Lấy danh mục tất cả các hãng hàng không đối tác đang hoạt động.
+- `GET /api/Airlines/{id}`: Lấy chi tiết thông tin một hãng hàng không.
+- `POST /api/Airlines`: **[Admin / Tour Operator]** Đăng ký thêm hãng hàng không đối tác mới.
+- `PUT /api/Airlines/{id}`: **[Admin / Tour Operator]** Cập nhật thông tin hãng hàng không.
+- `DELETE /api/Airlines/{id}`: **[Admin]** Xóa hãng hàng không khỏi hệ thống.
+
+### 6.5 User Identity & RBAC (`/api/Users`)
+- `GET /api/Users`: **[Admin Only]** Lấy danh sách toàn bộ người dùng trong hệ thống kèm thông tin vai trò.
+- `PATCH /api/Users/{id}/role`: **[Admin Only]** Cập nhật vai trò người dùng (`ADMIN`, `TOUR_OPERATOR`, `TRAVELER`).
+- `DELETE /api/Users/{id}`: **[Admin Only]** Thu hồi quyền và xóa tài khoản người dùng.
+
+### 6.6 Flight Matrix & Slots (`/api/Departures`)
+- `GET /api/Departures`: Tra cứu toàn bộ chuyến bay và slot cất cánh.
+- `GET /api/Departures/{id}`: Xem chi tiết chuyến bay, máy bay khai thác, cửa ra máy bay (`Gate`).
+- `GET /api/Departures/{id}/seats`: Lấy sơ đồ ghế ngồi thời gian thực của chuyến bay.
+- `PATCH /api/Departures/{id}/status`: **[Admin Only]** Điều chỉnh trạng thái chuyến bay (`ON_TIME`, `DELAYED`, `BOARDING`, `CANCELLED`).
+
+### 6.7 Articles & Directives (`/api/Articles`)
+- `GET /api/Articles`: Lấy danh sách các bài viết cẩm nang du lịch và thông tư bay.
+- `GET /api/Articles/{slugOrId}`: Đọc bài viết chi tiết theo đường dẫn Slug hoặc ID.
 
 ---
 
-## 5. Backend Architecture (ASP.NET Core & EF Core)
+## 7. Hệ Thống Thiết Kế: Swiss Modernism 2.0
 
-The backend provides a scalable, stateless API powered by **Entity Framework Core 8**.
-
-### 5.1. Key EF Core Features & Constraints
-- **Code-First DbContext (`AirportDbContext`):** Enforces entity relations, navigational properties, and table naming.
-- **Critical Anti-Overbooking Constraint:** A composite unique index on `(FlightId, SeatId)` in `SeatAssignment` guarantees at the database engine level that no two passengers can be issued the same seat on a flight.
-- **Unique PNR Generation:** `Booking.BookingReference` has a unique database index to guarantee conflict-free PNR references.
-- **Financial Immutability:** `Booking` snapshots the gross `TotalPrice` and `DiscountAmount` at the moment of payment, decoupling historical transactions from future tour price edits.
-
-### 5.2. Core EF Core CLI Commands
-```bash
-# Add EF Core tooling packages
-dotnet add package Microsoft.EntityFrameworkCore.SqlServer
-dotnet add package Microsoft.EntityFrameworkCore.Tools
-dotnet add package Microsoft.EntityFrameworkCore.Design
-
-# Generate initial migration from entity models
-dotnet ef migrations add InitialCreate --project AirportManagement.Infrastructure --startup-project AirportManagement.Api
-
-# Update database schema
-dotnet ef database update --project AirportManagement.Infrastructure --startup-project AirportManagement.Api
-```
-
-### 5.3. REST API Endpoint Catalog
-
-| Controller | Method | Route | Description |
-| :--- | :--- | :--- | :--- |
-| `AuthController` | `POST` | `/api/v1/auth/register` | Register new user account |
-| `AuthController` | `POST` | `/api/v1/auth/login` | Authenticate and obtain JWT token |
-| `FlightsController` | `GET` | `/api/v1/flights` | Search flight slots (origin, dest, date) |
-| `FlightsController` | `PATCH`| `/api/v1/flights/{id}/status` | Dispatcher updates FIDS flight status |
-| `ToursController` | `GET` | `/api/v1/tours` | List commercial travel packages |
-| `ToursController` | `GET` | `/api/v1/tours/{id}` | Tour detail with daily itinerary |
-| `DestinationsController`| `GET` | `/api/v1/destinations` | List airport-linked destinations |
-| `BookingsController` | `POST` | `/api/v1/bookings` | Create booking, manifest & issue PNR |
-| `BookingsController` | `GET` | `/api/v1/bookings/{pnr}` | Query booking status by PNR code |
-| `SeatsController` | `GET` | `/api/v1/flights/{id}/seats` | Real-time seat occupancy map |
-| `SeatsController` | `POST` | `/api/v1/check-in/select-seat`| Allocate passenger to seat |
-| `CouponsController` | `GET` | `/api/v1/coupons/validate/{code}` | Verify coupon validity |
-| `ArticlesController` | `GET` | `/api/v1/articles` | Flight tips & travel guides |
-| `AnalyticsController`| `GET` | `/api/v1/analytics/dashboard` | Revenue, load factor & FIDS stats |
-
-*For complete implementation details, POCO classes, and configuration snippets, see [docs/BACKEND_API_EFCORE.md](file:///d:/Github/fleeforezz/Airport_Management_System/docs/BACKEND_API_EFCORE.md).*
+Toàn bộ giao diện người dùng được xây dựng tuân thủ nghiêm ngặt các nguyên tắc thiết kế **Swiss Modernism 2.0**:
+1. **Zero Border Radius (`rounded-none`):** Không sử dụng bất kỳ góc bo tròn nào trên toàn bộ hệ thống (0px border-radius trên nút bấm, thẻ card, input, dialog).
+2. **Flat 2D Architecture:** Loại bỏ hoàn toàn đổ bóng (`box-shadow: none !important;`). Sử dụng đường kẻ hairline 1px siêu nét (`#E5E7EB` và `#000000`) để định hình cấu trúc không gian thị giác.
+3. **Bảng Màu Kỷ Luật Cao (Strict Color Palette):**
+   - **Core Black:** `#000000` (Tiêu đề, nút hành động chính, viền khung).
+   - **Pure White:** `#FFFFFF` (Nền thẻ card, nền trang chính).
+   - **Light Gray:** `#F5F5F5` (Nền bảng biểu, input nền, dải thông tin phụ).
+   - **Accent Swiss Red:** `#DC2626` (Điểm nhấn nhận diện thương hiệu, cảnh báo quan trọng, trạng thái nổi bật).
+   - **Status Green:** `#22C55E` (Xác nhận đặt vé thành công, hoàn tiền 100%).
+4. **Typography Mạnh Mẽ:** Kết hợp chuẩn mực giữa **Inter** (tiêu đề nội dung) và **JetBrains Mono** (mã PNR, mã chuyến bay, giờ bay UTC, số tiền, thông số kỹ thuật).
 
 ---
 
-## 6. Front-End Portals & User Experience
-
-The front-end is organized as a unified Vite workspace with **dual entry points**:
-
-```
-frontend/
-├── index.html            # Entry 1: Passenger Booking WebApp (Port 5173)
-├── admin.html            # Entry 2: Airport Dispatch Admin Portal (Port 5174)
-├── vite.config.ts        # Client WebApp build configuration
-├── vite.admin.config.ts  # Admin Portal build configuration
-└── src/
-    ├── pages/            # Passenger pages (HomePage, Explore, Tours, Booking, Account)
-    ├── components/       # Layout, TourCard, DeparturePicker, GuestCounter, StatusBadge
-    ├── admin/            # Dispatch portal (Dashboard, Tours, Flights, Destinations, CMS)
-    ├── context/          # AuthContext, BookingDraftContext
-    ├── hooks/            # useFetch, useTours, useBookings
-    ├── utils/            # axiosInstance, apiPaths, format (currency, time, duration)
-    └── styles/           # swiss.css design system tokens
-```
-
-### 1. Passenger WebApp (`index.html`)
-- **Visual Discovery:** Search flights and tours by airport code, date, and budget.
-- **Departure Slot Picker:** Real-time selection of departure dates and flight times.
-- **Seat Allocation Map:** Interactive aircraft seating selector with cabin classes (First, Business, Economy) and exit-row flags.
-- **Booking Review & Checkout:** Guest or authenticated booking, coupon redemption, multi-passenger manifest inputs, and instant PNR issuance.
-
-### 2. Airport Dispatch Admin Portal (`admin.html`)
-- **Live FIDS Monitor:** Real-time Flight Information Display Board with status toggles (`SCHEDULED`, `ON_TIME`, `BOARDING`, `DELAYED`, `CANCELLED`).
-- **Tour & Flight Dispatcher:** Create and manage scheduled flight departure slots, assign aircraft tail numbers, terminals, and gates.
-- **Booking & Manifest Manager:** Search bookings by PNR, inspect passenger manifests, and process check-ins.
-- **Content & Voucher CMS:** Manage destination profiles, travel articles, and discount voucher campaigns.
-
----
-
-## 7. Design System: Swiss Modernism 2.0
-
-The entire UI is built on strict **Swiss Modernism 2.0** design rules (documented in [design-rules/DESIGN.md](file:///d:/Github/fleeforezz/Airport_Management_System/design-rules/DESIGN.md)):
-
-- **Zero Radius:** `rounded-none` / `0px border radius` everywhere. No rounded cards or pill buttons.
-- **Flat 2D Architecture:** Absolutely no drop shadows (`box-shadow: none !important;`). Depth is achieved solely through 1px crisp hairlines (`#E5E7EB` / `#000000`).
-- **Color Discipline:**
-  - `Core Black (#000000)`: Primary typography, active states, borders.
-  - `Pure White (#FFFFFF)`: Card and canvas backgrounds.
-  - `Light Gray (#F5F5F5)`: Subtle alternating row backgrounds.
-  - `Accent Swiss Red (#DC2626)`: High-priority alerts, primary action buttons, active tab indicators.
-- **Typography Scale:**
-  - `Inter`: Sans-serif for high-legibility display copy.
-  - `JetBrains Mono`: Monospace for flight numbers, PNRs, IATA codes, and currency amounts.
-  - `label-caps`: Uppercase tracking `0.08em` for section labels and table column headers.
-
----
-
-## 8. Repository Directory Structure
+## 8. Cấu Trúc Mã Nguồn Dự Án (Project Structure)
 
 ```
 Airport_Management_System/
-├── AirportManagementSystem/                # C# Backend Service & Models
-│   ├── Models/                            # Domain models (Airport, Airline, Aircraft)
-│   ├── Repositories/                      # Data access abstractions
-│   ├── Services/                          # Airport service logic
-│   └── AirportManagementSystem.csproj     # .NET 8 Project file
 │
-├── frontend/                              # Frontend React 19 + TypeScript + Vite
+├── backend/                               # ASP.NET Core Clean Architecture Backend
+│   ├── Domain/                            # Domain Entities & Business Rules
+│   │   ├── Entities/
+│   │   │   ├── TourEntities.cs            # Tour, ItineraryDay (FLIGHT_EXCLUSIVE)
+│   │   │   ├── FlightAndBookingEntities.cs# Booking (BaggagePackage, RefundAmount), UserAccount
+│   │   │   └── AirportEntities.cs         # Airline, Flight, FlightSeat, Destination, Article
+│   │   └── Domain.csproj
+│   ├── Application/                       # DTOs, Business Services & Interfaces
+│   │   ├── DTOs/                          # AuthDtos, FlightAndTourDtos, RemainingDtos
+│   │   ├── Interfaces/                    # ITourService, IBookingService, IAirlineService, IUserService
+│   │   ├── Services/                      # TourService, BookingService, AirlineService, AuthService
+│   │   └── Application.csproj
+│   ├── Infrastructure/                    # Database Persistence & Repositories
+│   │   ├── Data/
+│   │   │   ├── AirportDbContext.cs        # EF Core DbContext with Precision mapping
+│   │   │   └── DbInitializer.cs           # Seed Data (Admin, Tour Operator, Traveler)
+│   │   ├── Repositories/                  # Generic Repository Implementation
+│   │   └── Infrastructure.csproj
+│   └── API/                               # Web API Host & Controllers
+│       ├── Controllers/                   # ToursController, BookingsController, AirlinesController, UsersController...
+│       ├── Program.cs                     # DI Registrations, CORS, Authentication
+│       └── appsettings.json               # PostgreSQL Connection String
+│
+├── frontend/                              # React 18/19 + TypeScript + Vite 6
 │   ├── src/
-│   │   ├── admin/                         # Admin Dispatcher Portal pages & components
-│   │   ├── components/                    # Swiss UI component library
-│   │   ├── context/                       # Global React Contexts
-│   │   ├── hooks/                         # Reusable state and data fetching hooks
-│   │   ├── pages/                         # Client WebApp pages
-│   │   ├── styles/                        # Swiss Modernism 2.0 CSS & tokens
-│   │   ├── types/                         # TypeScript interfaces (User, Tour, Flight, Booking)
-│   │   └── utils/                         # API paths, formatters, mock data
-│   ├── admin.html                         # Admin Dispatch entry
-│   ├── index.html                         # Passenger WebApp entry
-│   ├── package.json                       # NPM dependencies
-│   ├── vite.config.ts                     # Client Vite config
-│   └── vite.admin.config.ts               # Admin Vite config
+│   │   ├── admin/                         # Portal Điều Hành (Admin & Tour Operator)
+│   │   │   ├── components/                # Sidebar (RBAC Switcher), Drawer, Table, ImageUploader
+│   │   │   ├── pages/                     # TourPage (CRUD), AirlinesPage, UsersPage, BookingPage
+│   │   │   ├── App.tsx                    # Shell điều phối tab theo vai trò đăng nhập
+│   │   │   └── main.tsx
+│   │   ├── components/                    # Passenger Components (PriceBreakdown, Header, Footer)
+│   │   ├── context/                       # AuthContext, BookingDraftContext (Baggage calculations)
+│   │   ├── pages/
+│   │   │   ├── auth/                      # LoginPage (Đăng nhập, Đăng ký chọn Role Traveler/Operator)
+│   │   │   ├── booking/                   # Checkout (Baggage Add-on, Policy Acceptance), Detail (Refund)
+│   │   │   ├── tours/                     # TourDetailPage (Baggage & Refund Policy tables), TourListPage
+│   │   │   └── HomePage.tsx               # Hero Section & Quick Flight Search Engine
+│   │   ├── services/api.ts                # Axios API Services (tourApi, bookingApi, airlineApi, userApi)
+│   │   ├── types/index.ts                 # TypeScript Data Contracts
+│   │   └── utils/                         # Formatters, Axios Instances, Mock Fallbacks
+│   ├── package.json
+│   ├── vite.config.ts                     # Main Passenger WebApp config
+│   └── vite.admin.config.ts               # Standalone Admin Portal bundle config
 │
-├── design-rules/                          # Design System Tokens & Guidelines
-│   ├── DESIGN.md                          # Swiss Modernism 2.0 specification
-│   ├── UI_COMPONENTS.md                   # DOs and DON'Ts code patterns
-│   ├── AIRPORT_DOMAIN_RULES.md            # IATA/ICAO, PNR & flight domain rules
-│   └── PROMPT_TEMPLATES.md                # Ready-to-use AI prompts
-│
-├── docs/                                  # Complete Technical Architecture Documentation
-│   ├── DATABASE_ERD.md                    # 15-entity ERD, data dictionary, SQL types
-│   └── BACKEND_API_EFCORE.md              # ASP.NET Core & EF Core 8 API guide
-│
-├── Airport_Management_System_UML.drawio   # Official Draw.io ERD diagram file
-├── GEMINI.md                              # AI Agent workspace rules
-└── README.md                              # This master document
+├── design-rules/                          # Tài liệu quy chuẩn thiết kế Swiss Modernism 2.0
+└── README.md                              # Tài liệu kỹ thuật toàn diện dự án
 ```
 
 ---
 
-## 9. Quick Start & Installation
+## 9. Hướng Dẫn Cài Đặt & Khởi Chạy (Setup & Execution Guide)
 
-### 9.1. Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **.NET SDK**: `8.0` or higher
-- **Database Server**: Microsoft SQL Server (LocalDB, Express, or Docker) or PostgreSQL 15+
+### 9.1 Yêu Cầu Môi Trường (Prerequisites)
+- **.NET SDK 8.0** hoặc **9.0** trở lên.
+- **Node.js 18+** hoặc **20+** cùng trình quản lý gói `npm`.
+- **PostgreSQL 15+** (Máy chủ cục bộ hoặc Docker / Remote Homelab).
 
-### 9.2. Frontend Setup & Run
-```bash
-# Navigate to frontend directory
+### 9.2 Cấu Hình Cơ Sở Dữ Liệu PostgreSQL
+Mở file `backend/API/appsettings.json` và cấu hình chuỗi kết nối:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=aeroflight;Username=postgres;Password=YourPassword"
+  }
+}
+```
+
+### 9.3 Chạy Migration & Khởi Động Backend API
+Di chuyển vào thư mục backend và khởi chạy dịch vụ:
+```powershell
+# Chạy migration áp dụng cấu trúc bảng mới vào cơ sở dữ liệu
+dotnet ef database update --project backend/Infrastructure --startup-project backend/API
+
+# Khởi chạy Backend Web API (Mặc định lắng nghe tại http://localhost:5000)
+dotnet run --project backend/API/API.csproj
+```
+Khi khởi động lần đầu, `DbInitializer` sẽ tự động tạo bảng và nạp sẵn dữ liệu mẫu (Airlines, Flights, Tours, tài khoản Admin, Tour Operator, Traveler).  
+Truy cập tài liệu Swagger UI tại: `http://localhost:5000/swagger`
+
+### 9.4 Khởi Chạy Frontend Client
+Mở một cửa sổ dòng lệnh mới và khởi chạy:
+```powershell
 cd frontend
 
-# Install dependencies
+# Cài đặt các gói phụ thuộc (nếu chưa cài)
 npm install
 
-# Start the Passenger WebApp (Port 5173)
+# Khởi chạy máy chủ phát triển Vite
 npm run dev
-
-# Start the Admin Dispatch Portal (Port 5174)
-npm run dev:admin
-
-# Build production bundles
-npm run build         # Passenger WebApp
-npm run build:admin   # Admin Dispatch Portal
 ```
-
-### 9.3. Backend Setup (ASP.NET Core & EF Core)
-```bash
-# Navigate to backend directory
-cd AirportManagementSystem
-
-# Restore NuGet packages
-dotnet restore
-
-# Run Entity Framework Core migrations
-dotnet ef database update
-
-# Run the API server (Port 5000 / 5001)
-dotnet run
-```
+- **Passenger Portal (Khách du lịch):** `http://localhost:5173/`
+- **Admin & Tour Operator Portal:** `http://localhost:5173/admin.html`
 
 ---
 
-## 10. Industry Compliance & Business Rules
+## 10. Tài Khoản Kiểm Thử Mặc Định (Demo Test Matrix)
 
-1. **Airport Code Standards:** All airfields must carry valid 3-letter **IATA** (`SGN`, `DAD`, `HAN`) and 4-letter **ICAO** (`VVTS`, `VVRG`, `VVNB`) codes.
-2. **Airline Code Standards:** Airlines must be identified by 2-character **IATA** (`VN`, `VJ`, `QH`) and 3-letter **ICAO** (`HVN`, `VJC`, `BAV`) codes.
-3. **Passenger Name Record (PNR):** Generated booking codes follow the 6-to-8 alphanumeric character Sabre/Amadeus standard (`BK-2026-8849`).
-4. **Timezone Handling:** All flight schedules (`DepartureTime`, `ArrivalTime`) are stored and computed in **UTC**, converted to local airport timezone only in presentation layers.
-5. **Manifest Passenger Classifications:**
-   - `ADULT`: Age 12+ (Full seat, standard baggage).
-   - `CHILD`: Age 2–11 (Full seat, reduced fare).
-   - `INFANT`: Age <2 (Lap child, zero or minimal seat charge).
+Hệ thống đã chuẩn bị sẵn 3 tài khoản tương ứng với 3 vai trò để kiểm thử toàn diện các luồng nghiệp vụ:
 
----
+| Vai Trò (Role) | Email Đăng Nhập | Mật Khẩu | Quyền Hạn Thực Tế Trong Hệ Thống |
+| :--- | :--- | :--- | :--- |
+| 👑 **Administrator** | `admin@airport.gov` | `Admin@123456` | Quản lý người dùng, đổi role RBAC, đăng bài viết cẩm nang, quản lý hãng bay, giám sát flight matrix. *Không được tạo/sửa tour*. |
+| 🏢 **Tour Operator** | `operator@aeroops.global` | `Operator@123456` | Thêm, sửa, xóa các gói tour bay, thiết lập chính sách hành lý & hủy tour, quản lý hãng bay hỗ trợ, giám sát PNR manifest. |
+| 🎒 **Traveler** | `alex@gmail.com` | `Traveler@123456` | Tìm tour hàng không, chọn chuyến bay, đặt chỗ, chọn gói phụ thu hành lý (+10kg, +20kg...), thực hiện hủy tour nhận hoàn tiền tự động. |
 
-## 11. Complete Documentation Index
-
-| Document | Path | Description |
-| :--- | :--- | :--- |
-| **Database ERD & Schema** | [docs/DATABASE_ERD.md](file:///d:/Github/fleeforezz/Airport_Management_System/docs/DATABASE_ERD.md) | Comprehensive 15-entity dictionary, 3NF normalization & relationships |
-| **Backend & EF Core Architecture**| [docs/BACKEND_API_EFCORE.md](file:///d:/Github/fleeforezz/Airport_Management_System/docs/BACKEND_API_EFCORE.md) | ASP.NET Core Web API, EF Core models, DbContext, Migrations & REST endpoints |
-| **Interactive Visual Diagram** | [Airport_Management_System_UML.drawio](file:///d:/Github/fleeforezz/Airport_Management_System/Airport_Management_System_UML.drawio) | Visual draw.io ERD diagram file for VS Code Draw.io extension |
-| **Swiss Modernism 2.0 Design** | [design-rules/DESIGN.md](file:///d:/Github/fleeforezz/Airport_Management_System/design-rules/DESIGN.md) | Official design tokens, spacing scale, colors, and typography |
-| **Component Code Patterns** | [design-rules/UI_COMPONENTS.md](file:///d:/Github/fleeforezz/Airport_Management_System/design-rules/UI_COMPONENTS.md) | DOs and DON'Ts code patterns for frontend components |
-| **Airport Domain Rules** | [design-rules/AIRPORT_DOMAIN_RULES.md](file:///d:/Github/fleeforezz/Airport_Management_System/design-rules/AIRPORT_DOMAIN_RULES.md) | IATA, ICAO, PNR, flight rules and manifest specifications |
-| **AI Prompt Templates** | [design-rules/PROMPT_TEMPLATES.md](file:///d:/Github/fleeforezz/Airport_Management_System/design-rules/PROMPT_TEMPLATES.md) | Ready-to-use prompt templates for code generation |
+> 💡 *Mẹo kiểm thử:* Bạn có thể đăng ký tài khoản mới trực tiếp tại trang `/auth/login` và tự do chọn vai trò `TRAVELER` hoặc `TOUR_OPERATOR`. Trong giao diện Admin Portal (`/admin.html`), thanh điều hướng bên trái có sẵn bộ nút chuyển nhanh chế độ xem giữa **ADMIN** và **OPERATOR** để kiểm tra giao diện RBAC trực tiếp.
 
 ---
 
-## 📄 License
-This project is proprietary software developed for educational and enterprise airport operations training. All rights reserved.
+© 2026 **AeroFlight Expeditions Platform**. All Rights Reserved.  
+Crafted with precision under the **Swiss Modernism 2.0** design philosophy.
